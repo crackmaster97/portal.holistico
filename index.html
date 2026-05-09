@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sanctum — Portal de Reservas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet" />
+
+<style>
+  /* ─── RESET & BASE ────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream:      #FAF9F6;
+    --bone:       #F3F1EC;
+    --charcoal:   #262626;
+    --mid:        #6B6B6B;
+    --light:      #ADADAD;
+    --gold:       #C9A96E;
+    --gold-pale:  #E8D5B0;
+    --gold-hover: #B8935A;
+    --line:       rgba(38,38,38,0.12);
+    --line-hover: rgba(38,38,38,0.35);
+    --radius:     3px;
+    --ease:       cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  html { scroll-behavior: smooth; font-size: 16px; }
+
+  body {
+    background: var(--cream);
+    color: var(--charcoal);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ─── NOISE TEXTURE OVERLAY ───────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 200px;
+  }
+
+  /* ─── TYPOGRAPHY ──────────────────────────────────────── */
+  h1, h2, h3 { font-family: 'Cormorant Garamond', serif; font-weight: 300; letter-spacing: 0.02em; line-height: 1.15; }
+
+  h1 { font-size: clamp(3rem, 8vw, 6.5rem); font-style: italic; }
+  h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+  h3 { font-size: 1.35rem; }
+
+  p { font-size: 0.82rem; letter-spacing: 0.08em; color: var(--mid); }
+
+  /* ─── LAYOUT ──────────────────────────────────────────── */
+  .container { max-width: 1080px; margin: 0 auto; padding: 0 clamp(1.5rem, 5vw, 4rem); }
+
+  section { padding: clamp(4rem, 10vw, 8rem) 0; position: relative; z-index: 1; }
+
+  /* ─── HEADER ──────────────────────────────────────────── */
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 1.6rem clamp(1.5rem, 5vw, 4rem);
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(250,249,246,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+    transition: border-color 0.5s var(--ease);
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--charcoal);
+    text-decoration: none;
+  }
+
+  .logo span {
+    display: inline-block;
+    width: 1px; height: 1em;
+    background: var(--gold);
+    margin: 0 0.7em;
+    vertical-align: middle;
+    opacity: 0.8;
+  }
+
+  nav { display: flex; gap: 2.5rem; align-items: center; }
+
+  nav a {
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mid);
+    text-decoration: none;
+    transition: color 0.3s var(--ease);
+  }
+  nav a:hover { color: var(--charcoal); }
+
+  /* ─── HERO ────────────────────────────────────────────── */
+  #hero {
+    min-height: 100svh;
+    display: flex; align-items: center;
+    padding-top: 80px;
+    overflow: hidden;
+  }
+
+  .hero-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+    width: 100%;
+  }
+
+  .hero-text { opacity: 0; animation: fadeUp 1.2s var(--ease) 0.3s forwards; }
+
+  .hero-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.8rem;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 2rem; height: 1px;
+    background: var(--gold);
+  }
+
+  .hero-title { margin-bottom: 1.8rem; color: var(--charcoal); }
+
+  .hero-subtitle {
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    color: var(--mid);
+    line-height: 2;
+    max-width: 36ch;
+    margin-bottom: 3rem;
+  }
+
+  .hero-visual {
+    opacity: 0;
+    animation: fadeIn 1.6s var(--ease) 0.6s forwards;
+    display: flex; justify-content: center; align-items: center;
+  }
+
+  .hero-emblem {
+    width: min(420px, 90%);
+    aspect-ratio: 1;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .hero-emblem::before {
+    content: '';
+    position: absolute; inset: 16px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+  }
+  .hero-emblem::after {
+    content: '';
+    position: absolute; inset: 32px;
+    border: 1px dashed rgba(201,169,110,0.25);
+    border-radius: 50%;
+  }
+
+  .emblem-svg {
+    width: 55%;
+    opacity: 0.55;
+  }
+
+  /* ─── BUTTON STYLES ───────────────────────────────────── */
+  .btn {
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.5s var(--ease);
+    border-radius: var(--radius);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary {
+    background: var(--charcoal);
+    color: var(--cream);
+    border: 1px solid var(--charcoal);
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gold);
+    transform: translateX(-101%);
+    transition: transform 0.5s var(--ease);
+  }
+  .btn-primary:hover::after { transform: translateX(0); }
+  .btn-primary span { position: relative; z-index: 1; }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--charcoal);
+    border: 1px solid var(--line-hover);
+  }
+  .btn-outline:hover {
+    background: var(--charcoal);
+    color: var(--cream);
+    border-color: var(--charcoal);
+  }
+
+  .btn-gold {
+    background: var(--gold);
+    color: var(--cream);
+    border: 1px solid var(--gold);
+  }
+  .btn-gold:hover {
+    background: var(--gold-hover);
+    border-color: var(--gold-hover);
+  }
+
+  /* ─── DIVIDER ─────────────────────────────────────────── */
+  .divider {
+    display: flex; align-items: center; gap: 1.5rem;
+    margin: 2rem 0;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1;
+    height: 1px; background: var(--line);
+  }
+  .divider-icon { color: var(--gold); opacity: 0.7; }
+
+  /* ─── SECTION HEADER ──────────────────────────────────── */
+  .section-header {
+    text-align: center;
+    margin-bottom: clamp(2.5rem, 6vw, 5rem);
+  }
+  .section-eyebrow {
+    font-size: 0.63rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+  .section-title { color: var(--charcoal); margin-bottom: 0.8rem; }
+  .section-sub { max-width: 42ch; margin: 0 auto; }
+
+  /* ─── SERVICES ────────────────────────────────────────── */
+  #servicios { background: var(--bone); }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5px;
+    border: 1px solid var(--line);
+  }
+
+  .service-card {
+    background: var(--cream);
+    padding: 3rem 2.5rem;
+    cursor: pointer;
+    transition: background 0.5s var(--ease), transform 0.4s var(--ease);
+    position: relative;
+    display: flex; flex-direction: column;
+  }
+  .service-card:hover { background: var(--charcoal); }
+  .service-card.selected { background: var(--charcoal); }
+
+  .service-card-icon {
+    width: 42px; height: 42px;
+    margin-bottom: 2rem;
+    color: var(--gold);
+    transition: color 0.5s var(--ease), transform 0.5s var(--ease);
+  }
+  .service-card:hover .service-card-icon,
+  .service-card.selected .service-card-icon { color: var(--gold-pale); transform: scale(1.05); }
+
+  .service-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: var(--charcoal);
+    margin-bottom: 0.8rem;
+    transition: color 0.5s var(--ease);
+    letter-spacing: 0.02em;
+  }
+  .service-card:hover .service-card-title,
+  .service-card.selected .service-card-title { color: var(--cream); }
+
+  .service-card-desc {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    line-height: 1.9;
+    color: var(--mid);
+    flex: 1;
+    margin-bottom: 2rem;
+    transition: color 0.5s var(--ease);
+  }
+  .service-card:hover .service-card-desc,
+  .service-card.selected .service-card-desc { color: rgba(250,249,246,0.55); }
+
+  .service-card-meta {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-top: 1px solid var(--line);
+    padding-top: 1.5rem;
+    transition: border-color 0.5s var(--ease);
+  }
+  .service-card:hover .service-card-meta,
+  .service-card.selected .service-card-meta { border-color: rgba(250,249,246,0.12); }
+
+  .service-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 300;
+    color: var(--charcoal);
+    transition: color 0.5s var(--ease);
+  }
+  .service-price sup {
+    font-size: 0.7rem;
+    vertical-align: super;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+  }
+  .service-card:hover .service-price,
+  .service-card.selected .service-price { color: var(--gold-pale); }
+
+  .service-duration {
+    font-size: 0.63rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--light);
+    transition: color 0.5s var(--ease);
+  }
+  .service-card:hover .service-duration,
+  .service-card.selected .service-duration { color: rgba(250,249,246,0.35); }
+
+  .service-check {
+    position: absolute; top: 1.5rem; right: 1.5rem;
+    width: 20px; height: 20px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.4s var(--ease), background 0.4s var(--ease);
+  }
+  .service-card.selected .service-check {
+    opacity: 1;
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+  .service-check svg { width: 10px; color: white; }
+
+  /* ─── BOOKING SECTION ─────────────────────────────────── */
+  #reserva { background: var(--cream); }
+
+  .booking-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  /* ─── CALENDAR ────────────────────────────────────────── */
+  .calendar-wrap {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: white;
+  }
+
+  .calendar-header {
+    padding: 1.5rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cal-nav {
+    background: none; border: none; cursor: pointer;
+    color: var(--mid);
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    transition: all 0.3s var(--ease);
+  }
+  .cal-nav:hover { border-color: var(--charcoal); color: var(--charcoal); }
+
+  .cal-month {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    color: var(--charcoal);
+    text-align: center;
+  }
+  .cal-month small {
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    color: var(--light);
+    text-transform: uppercase;
+    margin-top: 0.1rem;
+  }
+
+  .calendar-grid { padding: 1.5rem 2rem 2rem; }
+
+  .cal-days-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 0.8rem;
+  }
+  .cal-day-name {
+    text-align: center;
+    font-size: 0.58rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--light);
+    padding: 0.3rem;
+  }
+
+  .cal-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    color: var(--charcoal);
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    transition: all 0.3s var(--ease);
+    position: relative;
+  }
+  .cal-day:hover:not(.past):not(.empty) { border-color: var(--line-hover); }
+  .cal-day.past { color: var(--light); cursor: default; pointer-events: none; }
+  .cal-day.empty { cursor: default; }
+  .cal-day.today { color: var(--gold); font-weight: 500; }
+  .cal-day.selected {
+    background: var(--charcoal);
+    color: var(--cream);
+    border-color: var(--charcoal);
+  }
+  .cal-day.has-slots::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 50%; transform: translateX(-50%);
+    width: 3px; height: 3px;
+    background: var(--gold);
+    border-radius: 50%;
+  }
+  .cal-day.selected::after { background: var(--gold-pale); }
+
+  /* ─── TIME SLOTS ──────────────────────────────────────── */
+  .time-slots {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .time-slots-label {
+    font-size: 0.63rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 1rem;
+  }
+
+  .slots-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .time-slot {
+    padding: 0.65rem 0.5rem;
+    text-align: center;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--charcoal);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.3s var(--ease);
+    background: white;
+  }
+  .time-slot:hover { border-color: var(--charcoal); }
+  .time-slot.selected {
+    background: var(--charcoal);
+    color: var(--cream);
+    border-color: var(--charcoal);
+  }
+  .time-slot.past {
+    color: var(--light);
+    cursor: default;
+    pointer-events: none;
+    background: var(--bone);
+  }
+
+  /* ─── FORM ────────────────────────────────────────────── */
+  .form-wrap {
+    display: flex; flex-direction: column; gap: 1.8rem;
+  }
+
+  .form-summary {
+    padding: 1.5rem 2rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: white;
+    margin-bottom: 0.5rem;
+  }
+  .form-summary-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.6rem;
+  }
+  .form-summary-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--charcoal);
+    line-height: 1.5;
+  }
+  .form-summary-empty {
+    font-size: 0.75rem;
+    color: var(--light);
+    font-style: italic;
+  }
+
+  .field-group { position: relative; }
+
+  .field-label {
+    display: block;
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 0.6rem;
+  }
+
+  .field-input, .field-select, .field-textarea {
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    color: var(--charcoal);
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    outline: none;
+    transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .field-input:focus, .field-select:focus, .field-textarea:focus {
+    border-color: var(--charcoal);
+    box-shadow: 0 0 0 3px rgba(38,38,38,0.04);
+  }
+  .field-input::placeholder, .field-textarea::placeholder {
+    color: var(--light);
+    font-style: italic;
+  }
+
+  .field-textarea { resize: none; height: 90px; line-height: 1.8; }
+
+  .field-select-wrap { position: relative; }
+  .field-select-wrap::after {
+    content: '';
+    position: absolute;
+    right: 1.2rem; top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid var(--mid);
+    pointer-events: none;
+  }
+  .field-select { cursor: pointer; padding-right: 2.5rem; }
+  .field-select option { background: white; color: var(--charcoal); }
+
+  .form-cta {
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--line);
+    display: flex; flex-direction: column; gap: 0.8rem;
+  }
+  .form-cta-note {
+    font-size: 0.63rem;
+    letter-spacing: 0.1em;
+    color: var(--light);
+    text-align: center;
+  }
+
+  /* ─── PHILOSOPHY STRIP ────────────────────────────────── */
+  #filosofia {
+    background: var(--charcoal);
+    padding: clamp(3rem, 7vw, 6rem) 0;
+  }
+  #filosofia .section-eyebrow { color: var(--gold); }
+  #filosofia .section-title { color: var(--cream); }
+  #filosofia .section-sub { color: rgba(250,249,246,0.45); }
+
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0;
+    margin-top: 3rem;
+    border: 1px solid rgba(250,249,246,0.08);
+  }
+
+  .pillar {
+    padding: 2.5rem 2rem;
+    border-right: 1px solid rgba(250,249,246,0.08);
+    text-align: center;
+  }
+  .pillar:last-child { border-right: none; }
+
+  .pillar-icon {
+    width: 28px; height: 28px;
+    color: var(--gold);
+    margin: 0 auto 1.2rem;
+    opacity: 0.8;
+  }
+
+  .pillar-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: var(--cream);
+    margin-bottom: 0.6rem;
+    font-style: italic;
+  }
+
+  .pillar-text {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: rgba(250,249,246,0.4);
+    line-height: 1.9;
+  }
+
+  /* ─── FOOTER ──────────────────────────────────────────── */
+  footer {
+    background: var(--cream);
+    border-top: 1px solid var(--line);
+    padding: 3rem clamp(1.5rem, 5vw, 4rem);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+    position: relative; z-index: 1;
+  }
+
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-style: italic;
+    color: var(--charcoal);
+    letter-spacing: 0.05em;
+  }
+
+  .footer-copy {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--light);
+  }
+
+  /* ─── MODAL ───────────────────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(38,38,38,0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s var(--ease);
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    max-width: 500px; width: 100%;
+    padding: 3.5rem;
+    text-align: center;
+    transform: translateY(20px);
+    transition: transform 0.5s var(--ease);
+    position: relative;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-icon {
+    width: 56px; height: 56px;
+    background: var(--bone);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 2rem;
+    color: var(--gold);
+  }
+
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.9rem;
+    font-style: italic;
+    color: var(--charcoal);
+    margin-bottom: 0.8rem;
+  }
+
+  .modal-text {
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    color: var(--mid);
+    line-height: 2;
+    margin-bottom: 2rem;
+  }
+
+  .modal-summary {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: left;
+  }
+  .modal-summary-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.4rem 0;
+  }
+  .modal-summary-row + .modal-summary-row {
+    border-top: 1px solid var(--line);
+    margin-top: 0.4rem;
+  }
+  .modal-summary-key {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--light);
+  }
+  .modal-summary-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--charcoal);
+  }
+
+  .modal-actions { display: flex; flex-direction: column; gap: 0.8rem; }
+
+  .modal-close {
+    position: absolute; top: 1.2rem; right: 1.2rem;
+    background: none; border: none; cursor: pointer;
+    color: var(--light); font-size: 1.2rem;
+    transition: color 0.3s var(--ease);
+    line-height: 1;
+  }
+  .modal-close:hover { color: var(--charcoal); }
+
+  /* ─── VALIDATION ──────────────────────────────────────── */
+  .field-group.error .field-input,
+  .field-group.error .field-select { border-color: #c0392b; }
+  .field-error {
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    color: #c0392b;
+    margin-top: 0.4rem;
+    display: none;
+  }
+  .field-group.error .field-error { display: block; }
+
+  /* ─── TOAST ───────────────────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: var(--charcoal);
+    color: var(--cream);
+    padding: 1rem 1.8rem;
+    border-radius: var(--radius);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    z-index: 600;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s var(--ease);
+    pointer-events: none;
+    max-width: 300px;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ─── SCROLL INDICATOR ────────────────────────────────── */
+  .scroll-hint {
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    margin-top: 4rem;
+    opacity: 0;
+    animation: fadeIn 1s var(--ease) 1.5s forwards;
+  }
+  .scroll-hint span {
+    font-size: 0.55rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--light);
+  }
+  .scroll-line {
+    width: 1px; height: 48px;
+    background: linear-gradient(to bottom, var(--charcoal), transparent);
+    animation: scrollLine 2s var(--ease) infinite;
+  }
+
+  /* ─── ANIMATIONS ──────────────────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes scrollLine {
+    0%   { transform: scaleY(0) translateY(-100%); transform-origin: top; opacity: 1; }
+    50%  { transform: scaleY(1) translateY(0); opacity: 1; }
+    100% { transform: scaleY(0) translateY(100%); opacity: 0; }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ─── RESPONSIVE ──────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .hero-inner { grid-template-columns: 1fr; }
+    .hero-visual { display: none; }
+    .booking-layout { grid-template-columns: 1fr; gap: 2rem; }
+    nav { display: none; }
+    .pillar { border-right: none; border-bottom: 1px solid rgba(250,249,246,0.08); }
+    .pillar:last-child { border-bottom: none; }
+    .modal { padding: 2.5rem 1.8rem; }
+    footer { justify-content: center; text-align: center; }
+  }
+
+  @media (max-width: 480px) {
+    .slots-grid { grid-template-columns: repeat(2, 1fr); }
+    .services-grid { gap: 0; }
+    .service-card { border-bottom: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ░░ HEADER ░░ -->
+<header>
+  <a href="#" class="logo">Sanctum<span></span>Holístico</a>
+  <nav>
+    <a href="#servicios">Servicios</a>
+    <a href="#reserva">Reservas</a>
+    <a href="#filosofia">Filosofía</a>
+  </nav>
+  <a href="#reserva" class="btn btn-outline" style="padding:0.55rem 1.4rem;">Solicitar Cita</a>
+</header>
+
+<!-- ░░ HERO ░░ -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <p class="hero-eyebrow">Portal de Reservas Exclusivo</p>
+        <h1>Tu Espacio<br>de Conexión<br>Elevada</h1>
+        <p class="hero-subtitle">Un entorno de consciencia expandida, diseñado para quienes buscan transformación profunda a través de prácticas ancestrales de alto nivel.</p>
+        <a href="#reserva" class="btn btn-primary"><span>Solicitar Cita →</span></a>
+        <div class="scroll-hint">
+          <div class="scroll-line"></div>
+          <span>Explorar</span>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-emblem">
+          <!-- Sacred geometry SVG -->
+          <svg class="emblem-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="100" r="80" stroke="#C9A96E" stroke-width="0.5"/>
+            <circle cx="100" cy="60" r="40" stroke="#C9A96E" stroke-width="0.5"/>
+            <circle cx="65.4" cy="80" r="40" stroke="#C9A96E" stroke-width="0.5"/>
+            <circle cx="134.6" cy="80" r="40" stroke="#C9A96E" stroke-width="0.5"/>
+            <circle cx="65.4" cy="120" r="40" stroke="#C9A96E" stroke-width="0.5"/>
+            <circle cx="134.6" cy="120" r="40" stroke="#C9A96E" stroke-width="0.5"/>
+            <circle cx="100" cy="140" r="40" stroke="#C9A96E" stroke-width="0.5"/>
+            <circle cx="100" cy="100" r="40" stroke="#C9A96E" stroke-width="0.75"/>
+            <polygon points="100,30 164,65 164,135 100,170 36,135 36,65" stroke="#C9A96E" stroke-width="0.4" fill="none"/>
+            <line x1="100" y1="30" x2="100" y2="170" stroke="#C9A96E" stroke-width="0.3"/>
+            <line x1="36" y1="65" x2="164" y2="135" stroke="#C9A96E" stroke-width="0.3"/>
+            <line x1="164" y1="65" x2="36" y2="135" stroke="#C9A96E" stroke-width="0.3"/>
+            <circle cx="100" cy="100" r="4" fill="#C9A96E" fill-opacity="0.5"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ SERVICES ░░ -->
+<section id="servicios">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="section-eyebrow">Catálogo de Experiencias</p>
+      <h2 class="section-title">Servicios Curados</h2>
+      <p class="section-sub">Cada sesión es diseñada como un rito de paso personal, con intención, precisión y presencia total.</p>
+    </div>
+
+    <div class="services-grid reveal">
+
+      <div class="service-card" data-service="Experiencia de Tarot Integral" data-price="USD 120" data-duration="90 min" onclick="selectService(this)">
+        <div class="service-check">
+          <svg viewBox="0 0 10 8" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 3.5,7 9,1"/></svg>
+        </div>
+        <svg class="service-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <rect x="4" y="2" width="10" height="16" rx="1"/>
+          <path d="M9 6l1.5 2L13 5m0 5H7m0 3h4"/>
+          <path d="M14 6h4a1 1 0 011 1v13a1 1 0 01-1 1H9a1 1 0 01-1-1v-2"/>
+        </svg>
+        <h3 class="service-card-title">Experiencia de Tarot Integral</h3>
+        <p class="service-card-desc">Una lectura profunda y multidimensional que integra arquetipos junguianos, numerología esotérica y análisis de patrones kármicos para revelar el mapa de tu proceso interior actual.</p>
+        <div class="service-card-meta">
+          <span class="service-price"><sup>USD</sup> 120</span>
+          <span class="service-duration">90 minutos</span>
+        </div>
+      </div>
+
+      <div class="service-card" data-service="Armonización Energética Premium" data-price="USD 180" data-duration="120 min" onclick="selectService(this)">
+        <div class="service-check">
+          <svg viewBox="0 0 10 8" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 3.5,7 9,1"/></svg>
+        </div>
+        <svg class="service-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 3C12 3 8 7 8 12s4 9 4 9"/>
+          <path d="M3 12h18"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        <h3 class="service-card-title">Armonización Energética Premium</h3>
+        <p class="service-card-desc">Sesión de reequilibrio del campo áurico mediante técnicas de biomagnetismo, reiki avanzado y alineación de chakras con cristales de alta vibración, en un entorno de ceremonia.</p>
+        <div class="service-card-meta">
+          <span class="service-price"><sup>USD</sup> 180</span>
+          <span class="service-duration">120 minutos</span>
+        </div>
+      </div>
+
+      <div class="service-card" data-service="Viaje Akáshico Guiado" data-price="USD 220" data-duration="150 min" onclick="selectService(this)">
+        <div class="service-check">
+          <svg viewBox="0 0 10 8" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 3.5,7 9,1"/></svg>
+        </div>
+        <svg class="service-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+        <h3 class="service-card-title">Viaje Akáshico Guiado</h3>
+        <p class="service-card-desc">Acceso profundo a los Registros Akáshicos del alma para explorar patrones de vidas pasadas, contratos del alma, misión de vida y bloqueos transgeneracionales con guía experta y compasiva.</p>
+        <div class="service-card-meta">
+          <span class="service-price"><sup>USD</sup> 220</span>
+          <span class="service-duration">150 minutos</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ░░ BOOKING ░░ -->
+<section id="reserva">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="section-eyebrow">Agendamiento</p>
+      <h2 class="section-title">Solicitud de Reserva</h2>
+      <p class="section-sub">Selecciona fecha y horario de tu preferencia. Te confirmaremos disponibilidad en menos de 24 horas.</p>
+    </div>
+
+    <div class="booking-layout">
+
+      <!-- Calendar -->
+      <div class="reveal">
+        <div class="calendar-wrap">
+          <div class="calendar-header">
+            <button class="cal-nav" id="prevMonth" onclick="changeMonth(-1)" aria-label="Mes anterior">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="15,18 9,12 15,6"/></svg>
+            </button>
+            <div class="cal-month">
+              <span id="calMonthName">—</span>
+              <small id="calYear">—</small>
+            </div>
+            <button class="cal-nav" id="nextMonth" onclick="changeMonth(1)" aria-label="Mes siguiente">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9,18 15,12 9,6"/></svg>
+            </button>
+          </div>
+          <div class="calendar-grid">
+            <div class="cal-days-header">
+              <div class="cal-day-name">Do</div>
+              <div class="cal-day-name">Lu</div>
+              <div class="cal-day-name">Ma</div>
+              <div class="cal-day-name">Mi</div>
+              <div class="cal-day-name">Ju</div>
+              <div class="cal-day-name">Vi</div>
+              <div class="cal-day-name">Sá</div>
+            </div>
+            <div class="cal-days" id="calDays"></div>
+
+            <div class="time-slots" id="timeSlotsSection" style="display:none;">
+              <p class="time-slots-label">Horarios disponibles</p>
+              <div class="slots-grid" id="slotsGrid"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="form-wrap reveal">
+
+        <div class="form-summary" id="bookingSummary">
+          <p class="form-summary-label">Selección Actual</p>
+          <p class="form-summary-value" id="summaryText">
+            <span class="form-summary-empty">Elija un servicio y fecha para continuar.</span>
+          </p>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="inputNombre">Nombre Completo</label>
+          <input class="field-input" type="text" id="inputNombre" placeholder="Tu nombre y apellido" autocomplete="name" />
+          <p class="field-error">Por favor ingresa tu nombre completo.</p>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="inputWA">Número de WhatsApp</label>
+          <input class="field-input" type="tel" id="inputWA" placeholder="+54 9 11 0000 0000" autocomplete="tel" />
+          <p class="field-error">Por favor ingresa un número de WhatsApp válido.</p>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="inputArea">Área de Enfoque</label>
+          <div class="field-select-wrap">
+            <select class="field-select" id="inputArea">
+              <option value="" disabled selected>Selecciona tu área principal</option>
+              <option value="Claridad y propósito de vida">Claridad y propósito de vida</option>
+              <option value="Relaciones y vínculos emocionales">Relaciones y vínculos emocionales</option>
+              <option value="Prosperidad y abundancia">Prosperidad y abundancia</option>
+              <option value="Sanación y liberación de bloqueos">Sanación y liberación de bloqueos</option>
+              <option value="Conexión espiritual y expansión">Conexión espiritual y expansión</option>
+              <option value="Misión de vida y karma">Misión de vida y karma</option>
+            </select>
+          </div>
+          <p class="field-error">Por favor selecciona un área de enfoque.</p>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="inputNota">Nota Adicional <span style="opacity:.5;font-size:.55rem;">(Opcional)</span></label>
+          <textarea class="field-textarea" id="inputNota" placeholder="¿Hay algo específico que desees abordar o que el facilitador deba considerar?"></textarea>
+        </div>
+
+        <div class="form-cta">
+          <button class="btn btn-primary" onclick="handleSubmit()" style="text-align:center;border:none;">
+            <span>Solicitar Reserva →</span>
+          </button>
+          <p class="form-cta-note">
+            Al enviar, recibirás confirmación por WhatsApp en menos de 24 hrs. · Política de discreción total.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ PHILOSOPHY ░░ -->
+<section id="filosofia">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="section-eyebrow">Nuestra Esencia</p>
+      <h2 class="section-title" style="color:var(--cream);">Principios de la Práctica</h2>
+      <p class="section-sub" style="color:rgba(250,249,246,0.4);">Cada sesión es sostenida por pilares inamovibles de integridad, presencia y ética profesional.</p>
+    </div>
+    <div class="pillars reveal">
+      <div class="pillar">
+        <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <p class="pillar-title">Discreción Absoluta</p>
+        <p class="pillar-text">Total confidencialidad en cada intercambio y proceso. Tu privacidad es sagrada.</p>
+      </div>
+      <div class="pillar">
+        <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M12 14c-5 0-8 2-8 3v1h16v-1c0-1-3-3-8-3z"/>
+        </svg>
+        <p class="pillar-title">Presencia Total</p>
+        <p class="pillar-text">Cada sesión recibe atención undivided. Sin distracciones, sin protocolos genéricos.</p>
+      </div>
+      <div class="pillar">
+        <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z"/>
+        </svg>
+        <p class="pillar-title">Excelencia Ritual</p>
+        <p class="pillar-text">Más de una década de formación y práctica continua en tradiciones de alto nivel.</p>
+      </div>
+      <div class="pillar">
+        <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+        </svg>
+        <p class="pillar-title">Ética Incondicional</p>
+        <p class="pillar-text">Solo se trabaja desde el amor consciente, sin manipulación ni dependencia.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ FOOTER ░░ -->
+<footer>
+  <p class="footer-logo">Sanctum</p>
+  <div class="divider" style="flex:0;width:60px;margin:0;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" stroke-width="1" style="opacity:.5;">
+      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+    </svg>
+  </div>
+  <p class="footer-copy">© 2025 Sanctum Holístico — Todos los derechos reservados. Reservas con discreción absoluta.</p>
+</footer>
+
+<!-- ░░ MODAL DE CONFIRMACIÓN ░░ -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">×</button>
+    <div class="modal-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+        <polyline points="22,4 12,14.01 9,11.01"/>
+      </svg>
+    </div>
+    <h3 class="modal-title">Confirmar Solicitud</h3>
+    <p class="modal-text">Por favor revisa los detalles de tu solicitud antes de continuar a WhatsApp.</p>
+    <div class="modal-summary" id="modalSummaryContent"></div>
+    <div class="modal-actions">
+      <button class="btn btn-gold" onclick="goToWhatsApp()" style="border:none;text-align:center;width:100%;">
+        <span>Continuar a WhatsApp →</span>
+      </button>
+      <button class="btn btn-outline" onclick="closeModal()" style="text-align:center;background:none;width:100%;cursor:pointer;">
+        Modificar datos
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ░░ TOAST ░░ -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════ */
+const state = {
+  selectedService: null,
+  selectedDate: null,
+  selectedTime: null,
+  whatsappLink: null
+};
+
+const WHATSAPP_NUMBER = '5491100000000'; // ← Reemplaza con tu número real
+
+/* ═══════════════════════════════════════════════════════════
+   CALENDAR
+═══════════════════════════════════════════════════════════ */
+const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const today = new Date();
+let viewYear = today.getFullYear();
+let viewMonth = today.getMonth();
+
+const ALL_SLOTS = ['09:00','10:00','11:00','13:00','15:00','16:00','17:00','18:00','19:00'];
+
+function renderCalendar() {
+  document.getElementById('calMonthName').textContent = months[viewMonth];
+  document.getElementById('calYear').textContent = viewYear;
+  document.getElementById('prevMonth').disabled = (viewYear === today.getFullYear() && viewMonth <= today.getMonth());
+
+  const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const grid = document.getElementById('calDays');
+  grid.innerHTML = '';
+
+  for (let i = 0; i < firstDay; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'cal-day empty';
+    grid.appendChild(empty);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-day';
+    cell.textContent = d;
+
+    const cellDate = new Date(viewYear, viewMonth, d);
+    const isToday = (d === today.getDate() && viewMonth === today.getMonth() && viewYear === today.getFullYear());
+    const isPast = cellDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const isSunday = cellDate.getDay() === 0;
+
+    if (isPast || isSunday) {
+      cell.classList.add('past');
+    } else {
+      if (isToday) cell.classList.add('today');
+      cell.classList.add('has-slots');
+      cell.addEventListener('click', () => selectDate(d, cell));
+    }
+
+    if (state.selectedDate) {
+      const [sy, sm, sd] = state.selectedDate.split('-').map(Number);
+      if (d === sd && viewMonth === sm - 1 && viewYear === sy) cell.classList.add('selected');
+    }
+
+    grid.appendChild(cell);
+  }
+}
+
+function selectDate(day, el) {
+  document.querySelectorAll('.cal-day').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.selectedDate = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  state.selectedTime = null;
+  renderTimeSlots();
+  updateSummary();
+}
+
+function renderTimeSlots() {
+  const section = document.getElementById('timeSlotsSection');
+  const grid = document.getElementById('slotsGrid');
+  grid.innerHTML = '';
+  section.style.display = 'block';
+
+  const isToday = (() => {
+    if (!state.selectedDate) return false;
+    const [sy, sm, sd] = state.selectedDate.split('-').map(Number);
+    return sy === today.getFullYear() && sm - 1 === today.getMonth() && sd === today.getDate();
+  })();
+
+  ALL_SLOTS.forEach(slot => {
+    const el = document.createElement('div');
+    el.className = 'time-slot';
+    el.textContent = slot;
+
+    if (isToday) {
+      const [h, m] = slot.split(':').map(Number);
+      const slotDate = new Date(); slotDate.setHours(h, m, 0);
+      if (slotDate <= today) { el.classList.add('past'); }
+    }
+
+    if (!el.classList.contains('past')) {
+      el.addEventListener('click', () => {
+        document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selectedTime = slot;
+        updateSummary();
+      });
+    }
+
+    if (state.selectedTime === slot) el.classList.add('selected');
+    grid.appendChild(el);
+  });
+}
+
+function changeMonth(dir) {
+  viewMonth += dir;
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+  renderCalendar();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SERVICE SELECTION
+═══════════════════════════════════════════════════════════ */
+function selectService(card) {
+  document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  state.selectedService = {
+    name: card.dataset.service,
+    price: card.dataset.price,
+    duration: card.dataset.duration
+  };
+  updateSummary();
+  showToast('Servicio seleccionado. Elige fecha y horario.');
+  setTimeout(() => document.getElementById('reserva').scrollIntoView({ behavior: 'smooth', block: 'start' }), 400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SUMMARY UPDATE
+═══════════════════════════════════════════════════════════ */
+function updateSummary() {
+  const el = document.getElementById('summaryText');
+  const parts = [];
+  if (state.selectedService) parts.push(state.selectedService.name);
+  if (state.selectedDate) {
+    const [y, m, d] = state.selectedDate.split('-').map(Number);
+    parts.push(`${d} de ${months[m-1]} ${y}`);
+  }
+  if (state.selectedTime) parts.push(`${state.selectedTime} hrs`);
+
+  if (parts.length === 0) {
+    el.innerHTML = '<span class="form-summary-empty">Elija un servicio y fecha para continuar.</span>';
+  } else {
+    el.textContent = parts.join(' · ');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FORM SUBMISSION
+═══════════════════════════════════════════════════════════ */
+function validate() {
+  let ok = true;
+  const nombre = document.getElementById('inputNombre');
+  const wa = document.getElementById('inputWA');
+  const area = document.getElementById('inputArea');
+
+  [nombre, wa, area].forEach(f => f.closest('.field-group').classList.remove('error'));
+
+  if (!nombre.value.trim() || nombre.value.trim().split(' ').length < 2) {
+    nombre.closest('.field-group').classList.add('error'); ok = false;
+  }
+  if (!wa.value.trim() || wa.value.trim().length < 8) {
+    wa.closest('.field-group').classList.add('error'); ok = false;
+  }
+  if (!area.value) {
+    area.closest('.field-group').classList.add('error'); ok = false;
+  }
+  if (!state.selectedService) {
+    showToast('Por favor selecciona un servicio primero.'); ok = false;
+  }
+  if (!state.selectedDate) {
+    showToast('Por favor selecciona una fecha.'); ok = false;
+  }
+  if (!state.selectedTime) {
+    showToast('Por favor selecciona un horario.'); ok = false;
+  }
+  return ok;
+}
+
+function handleSubmit() {
+  if (!validate()) return;
+
+  const nombre = document.getElementById('inputNombre').value.trim();
+  const wa = document.getElementById('inputWA').value.trim();
+  const area = document.getElementById('inputArea').value;
+  const nota = document.getElementById('inputNota').value.trim();
+  const [y, m, d] = state.selectedDate.split('-').map(Number);
+  const fechaStr = `${d} de ${months[m-1]} de ${y}`;
+
+  const mensaje = [
+    `Estimado/a equipo de *Sanctum Holístico*,`,
+    ``,
+    `Me dirijo a ustedes con el fin de solicitar formalmente una reserva para la siguiente sesión:`,
+    ``,
+    `• *Servicio:* ${state.selectedService.name}`,
+    `• *Fecha solicitada:* ${fechaStr}`,
+    `• *Horario preferido:* ${state.selectedTime} hrs`,
+    `• *Área de Enfoque:* ${area}`,
+    nota ? `• *Nota adicional:* ${nota}` : null,
+    ``,
+    `*Datos de contacto:*`,
+    `• Nombre: ${nombre}`,
+    `• WhatsApp: ${wa}`,
+    ``,
+    `Quedo a la espera de su confirmación. Muchas gracias.`,
+    ``,
+    `Atentamente,`,
+    `${nombre}`
+  ].filter(l => l !== null).join('\n');
+
+  state.whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
+
+  // Build modal content
+  const modal = document.getElementById('modalSummaryContent');
+  const rows = [
+    ['Servicio', state.selectedService.name],
+    ['Duración', state.selectedService.duration],
+    ['Inversión', state.selectedService.price],
+    ['Fecha', fechaStr],
+    ['Horario', `${state.selectedTime} hrs`],
+    ['Nombre', nombre],
+    ['Área', area]
+  ];
+  modal.innerHTML = rows.map(([k, v]) => `
+    <div class="modal-summary-row">
+      <span class="modal-summary-key">${k}</span>
+      <span class="modal-summary-val">${v}</span>
+    </div>
+  `).join('');
+
+  openModal();
+}
+
+function goToWhatsApp() {
+  if (state.whatsappLink) window.open(state.whatsappLink, '_blank');
+  closeModal();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════════════ */
+function openModal() {
+  document.getElementById('confirmModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('confirmModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('confirmModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+/* ═══════════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════════ */
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INTERSECTION OBSERVER (REVEAL)
+═══════════════════════════════════════════════════════════ */
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+renderCalendar();
+</script> 
+</body>
+</html>
