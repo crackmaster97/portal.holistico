@@ -3,991 +3,1302 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Sanctum — Portal de Reservas</title>
+<title>Sanctum Obscura — Grimorio de Citas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Eagle+Lake&family=Cinzel:wght@400;500;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet" />
 
 <style>
-  /* ─── RESET & BASE ────────────────────────────────────── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --cream:      #FAF9F6;
-    --bone:       #F3F1EC;
-    --charcoal:   #262626;
-    --mid:        #6B6B6B;
-    --light:      #ADADAD;
-    --gold:       #C9A96E;
-    --gold-pale:  #E8D5B0;
-    --gold-hover: #B8935A;
-    --line:       rgba(38,38,38,0.12);
-    --line-hover: rgba(38,38,38,0.35);
-    --radius:     3px;
-    --ease:       cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-
-  html { scroll-behavior: smooth; font-size: 16px; }
-
-  body {
-    background: var(--cream);
-    color: var(--charcoal);
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 300;
-    line-height: 1.7;
-    -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
-  }
-
-  /* ─── NOISE TEXTURE OVERLAY ───────────────────────────── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.025;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    background-size: 200px;
-  }
-
-  /* ─── TYPOGRAPHY ──────────────────────────────────────── */
-  h1, h2, h3 { font-family: 'Cormorant Garamond', serif; font-weight: 300; letter-spacing: 0.02em; line-height: 1.15; }
-
-  h1 { font-size: clamp(3rem, 8vw, 6.5rem); font-style: italic; }
-  h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
-  h3 { font-size: 1.35rem; }
-
-  p { font-size: 0.82rem; letter-spacing: 0.08em; color: var(--mid); }
-
-  /* ─── LAYOUT ──────────────────────────────────────────── */
-  .container { max-width: 1080px; margin: 0 auto; padding: 0 clamp(1.5rem, 5vw, 4rem); }
-
-  section { padding: clamp(4rem, 10vw, 8rem) 0; position: relative; z-index: 1; }
-
-  /* ─── HEADER ──────────────────────────────────────────── */
-  header {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    padding: 1.6rem clamp(1.5rem, 5vw, 4rem);
-    display: flex; align-items: center; justify-content: space-between;
-    background: rgba(250,249,246,0.92);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--line);
-    transition: border-color 0.5s var(--ease);
-  }
-
-  .logo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.1rem;
-    font-weight: 400;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    color: var(--charcoal);
-    text-decoration: none;
-  }
-
-  .logo span {
-    display: inline-block;
-    width: 1px; height: 1em;
-    background: var(--gold);
-    margin: 0 0.7em;
-    vertical-align: middle;
-    opacity: 0.8;
-  }
-
-  nav { display: flex; gap: 2.5rem; align-items: center; }
-
-  nav a {
-    font-size: 0.68rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--mid);
-    text-decoration: none;
-    transition: color 0.3s var(--ease);
-  }
-  nav a:hover { color: var(--charcoal); }
-
-  /* ─── HERO ────────────────────────────────────────────── */
-  #hero {
-    min-height: 100svh;
-    display: flex; align-items: center;
-    padding-top: 80px;
-    overflow: hidden;
-  }
-
-  .hero-inner {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
-    align-items: center;
-    width: 100%;
-  }
-
-  .hero-text { opacity: 0; animation: fadeUp 1.2s var(--ease) 0.3s forwards; }
-
-  .hero-eyebrow {
-    font-size: 0.65rem;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 1.8rem;
-    display: flex; align-items: center; gap: 1rem;
-  }
-  .hero-eyebrow::before {
-    content: '';
-    display: inline-block;
-    width: 2rem; height: 1px;
-    background: var(--gold);
-  }
-
-  .hero-title { margin-bottom: 1.8rem; color: var(--charcoal); }
-
-  .hero-subtitle {
-    font-size: 0.82rem;
-    letter-spacing: 0.08em;
-    color: var(--mid);
-    line-height: 2;
-    max-width: 36ch;
-    margin-bottom: 3rem;
-  }
-
-  .hero-visual {
-    opacity: 0;
-    animation: fadeIn 1.6s var(--ease) 0.6s forwards;
-    display: flex; justify-content: center; align-items: center;
-  }
-
-  .hero-emblem {
-    width: min(420px, 90%);
-    aspect-ratio: 1;
-    border: 1px solid var(--line);
-    border-radius: 50%;
-    position: relative;
-    display: flex; align-items: center; justify-content: center;
-  }
-
-  .hero-emblem::before {
-    content: '';
-    position: absolute; inset: 16px;
-    border: 1px solid var(--line);
-    border-radius: 50%;
-  }
-  .hero-emblem::after {
-    content: '';
-    position: absolute; inset: 32px;
-    border: 1px dashed rgba(201,169,110,0.25);
-    border-radius: 50%;
-  }
-
-  .emblem-svg {
-    width: 55%;
-    opacity: 0.55;
-  }
-
-  /* ─── BUTTON STYLES ───────────────────────────────────── */
-  .btn {
-    display: inline-block;
-    padding: 1rem 2.5rem;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.68rem;
-    font-weight: 400;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.5s var(--ease);
-    border-radius: var(--radius);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .btn-primary {
-    background: var(--charcoal);
-    color: var(--cream);
-    border: 1px solid var(--charcoal);
-  }
-  .btn-primary::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--gold);
-    transform: translateX(-101%);
-    transition: transform 0.5s var(--ease);
-  }
-  .btn-primary:hover::after { transform: translateX(0); }
-  .btn-primary span { position: relative; z-index: 1; }
-
-  .btn-outline {
-    background: transparent;
-    color: var(--charcoal);
-    border: 1px solid var(--line-hover);
-  }
-  .btn-outline:hover {
-    background: var(--charcoal);
-    color: var(--cream);
-    border-color: var(--charcoal);
-  }
-
-  .btn-gold {
-    background: var(--gold);
-    color: var(--cream);
-    border: 1px solid var(--gold);
-  }
-  .btn-gold:hover {
-    background: var(--gold-hover);
-    border-color: var(--gold-hover);
-  }
-
-  /* ─── DIVIDER ─────────────────────────────────────────── */
-  .divider {
-    display: flex; align-items: center; gap: 1.5rem;
-    margin: 2rem 0;
-  }
-  .divider::before, .divider::after {
-    content: ''; flex: 1;
-    height: 1px; background: var(--line);
-  }
-  .divider-icon { color: var(--gold); opacity: 0.7; }
-
-  /* ─── SECTION HEADER ──────────────────────────────────── */
-  .section-header {
-    text-align: center;
-    margin-bottom: clamp(2.5rem, 6vw, 5rem);
-  }
-  .section-eyebrow {
-    font-size: 0.63rem;
-    letter-spacing: 0.4em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 1rem;
-  }
-  .section-title { color: var(--charcoal); margin-bottom: 0.8rem; }
-  .section-sub { max-width: 42ch; margin: 0 auto; }
-
-  /* ─── SERVICES ────────────────────────────────────────── */
-  #servicios { background: var(--bone); }
-
-  .services-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5px;
-    border: 1px solid var(--line);
-  }
-
-  .service-card {
-    background: var(--cream);
-    padding: 3rem 2.5rem;
-    cursor: pointer;
-    transition: background 0.5s var(--ease), transform 0.4s var(--ease);
-    position: relative;
-    display: flex; flex-direction: column;
-  }
-  .service-card:hover { background: var(--charcoal); }
-  .service-card.selected { background: var(--charcoal); }
-
-  .service-card-icon {
-    width: 42px; height: 42px;
-    margin-bottom: 2rem;
-    color: var(--gold);
-    transition: color 0.5s var(--ease), transform 0.5s var(--ease);
-  }
-  .service-card:hover .service-card-icon,
-  .service-card.selected .service-card-icon { color: var(--gold-pale); transform: scale(1.05); }
-
-  .service-card-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.25rem;
-    font-weight: 400;
-    color: var(--charcoal);
-    margin-bottom: 0.8rem;
-    transition: color 0.5s var(--ease);
-    letter-spacing: 0.02em;
-  }
-  .service-card:hover .service-card-title,
-  .service-card.selected .service-card-title { color: var(--cream); }
-
-  .service-card-desc {
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    line-height: 1.9;
-    color: var(--mid);
-    flex: 1;
-    margin-bottom: 2rem;
-    transition: color 0.5s var(--ease);
-  }
-  .service-card:hover .service-card-desc,
-  .service-card.selected .service-card-desc { color: rgba(250,249,246,0.55); }
-
-  .service-card-meta {
-    display: flex; justify-content: space-between; align-items: flex-end;
-    border-top: 1px solid var(--line);
-    padding-top: 1.5rem;
-    transition: border-color 0.5s var(--ease);
-  }
-  .service-card:hover .service-card-meta,
-  .service-card.selected .service-card-meta { border-color: rgba(250,249,246,0.12); }
-
-  .service-price {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.6rem;
-    font-weight: 300;
-    color: var(--charcoal);
-    transition: color 0.5s var(--ease);
-  }
-  .service-price sup {
-    font-size: 0.7rem;
-    vertical-align: super;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 300;
-  }
-  .service-card:hover .service-price,
-  .service-card.selected .service-price { color: var(--gold-pale); }
-
-  .service-duration {
-    font-size: 0.63rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--light);
-    transition: color 0.5s var(--ease);
-  }
-  .service-card:hover .service-duration,
-  .service-card.selected .service-duration { color: rgba(250,249,246,0.35); }
-
-  .service-check {
-    position: absolute; top: 1.5rem; right: 1.5rem;
-    width: 20px; height: 20px;
-    border: 1px solid var(--line);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0;
-    transition: opacity 0.4s var(--ease), background 0.4s var(--ease);
-  }
-  .service-card.selected .service-check {
-    opacity: 1;
-    background: var(--gold);
-    border-color: var(--gold);
-  }
-  .service-check svg { width: 10px; color: white; }
-
-  /* ─── BOOKING SECTION ─────────────────────────────────── */
-  #reserva { background: var(--cream); }
-
-  .booking-layout {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr;
-    gap: 4rem;
-    align-items: start;
-  }
-
-  /* ─── CALENDAR ────────────────────────────────────────── */
-  .calendar-wrap {
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    overflow: hidden;
-    background: white;
-  }
-
-  .calendar-header {
-    padding: 1.5rem 2rem;
-    display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .cal-nav {
-    background: none; border: none; cursor: pointer;
-    color: var(--mid);
-    width: 32px; height: 32px;
-    display: flex; align-items: center; justify-content: center;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    transition: all 0.3s var(--ease);
-  }
-  .cal-nav:hover { border-color: var(--charcoal); color: var(--charcoal); }
-
-  .cal-month {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.1rem;
-    font-weight: 400;
-    letter-spacing: 0.1em;
-    color: var(--charcoal);
-    text-align: center;
-  }
-  .cal-month small {
-    display: block;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.6rem;
-    letter-spacing: 0.25em;
-    color: var(--light);
-    text-transform: uppercase;
-    margin-top: 0.1rem;
-  }
-
-  .calendar-grid { padding: 1.5rem 2rem 2rem; }
-
-  .cal-days-header {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-    margin-bottom: 0.8rem;
-  }
-  .cal-day-name {
-    text-align: center;
-    font-size: 0.58rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--light);
-    padding: 0.3rem;
-  }
-
-  .cal-days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-  }
-
-  .cal-day {
-    aspect-ratio: 1;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.78rem;
-    font-weight: 300;
-    letter-spacing: 0.02em;
-    color: var(--charcoal);
-    cursor: pointer;
-    border: 1px solid transparent;
-    border-radius: var(--radius);
-    transition: all 0.3s var(--ease);
-    position: relative;
-  }
-  .cal-day:hover:not(.past):not(.empty) { border-color: var(--line-hover); }
-  .cal-day.past { color: var(--light); cursor: default; pointer-events: none; }
-  .cal-day.empty { cursor: default; }
-  .cal-day.today { color: var(--gold); font-weight: 500; }
-  .cal-day.selected {
-    background: var(--charcoal);
-    color: var(--cream);
-    border-color: var(--charcoal);
-  }
-  .cal-day.has-slots::after {
-    content: '';
-    position: absolute;
-    bottom: 3px;
-    left: 50%; transform: translateX(-50%);
-    width: 3px; height: 3px;
-    background: var(--gold);
-    border-radius: 50%;
-  }
-  .cal-day.selected::after { background: var(--gold-pale); }
-
-  /* ─── TIME SLOTS ──────────────────────────────────────── */
-  .time-slots {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--line);
-  }
-
-  .time-slots-label {
-    font-size: 0.63rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--mid);
-    margin-bottom: 1rem;
-  }
-
-  .slots-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-
-  .time-slot {
-    padding: 0.65rem 0.5rem;
-    text-align: center;
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    color: var(--charcoal);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: all 0.3s var(--ease);
-    background: white;
-  }
-  .time-slot:hover { border-color: var(--charcoal); }
-  .time-slot.selected {
-    background: var(--charcoal);
-    color: var(--cream);
-    border-color: var(--charcoal);
-  }
-  .time-slot.past {
-    color: var(--light);
-    cursor: default;
-    pointer-events: none;
-    background: var(--bone);
-  }
-
-  /* ─── FORM ────────────────────────────────────────────── */
-  .form-wrap {
-    display: flex; flex-direction: column; gap: 1.8rem;
-  }
-
-  .form-summary {
-    padding: 1.5rem 2rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: white;
-    margin-bottom: 0.5rem;
-  }
-  .form-summary-label {
-    font-size: 0.6rem;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 0.6rem;
-  }
-  .form-summary-value {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.1rem;
-    font-style: italic;
-    color: var(--charcoal);
-    line-height: 1.5;
-  }
-  .form-summary-empty {
-    font-size: 0.75rem;
-    color: var(--light);
-    font-style: italic;
-  }
-
-  .field-group { position: relative; }
-
-  .field-label {
-    display: block;
-    font-size: 0.6rem;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--mid);
-    margin-bottom: 0.6rem;
-  }
-
-  .field-input, .field-select, .field-textarea {
-    width: 100%;
-    padding: 0.9rem 1.2rem;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 300;
-    letter-spacing: 0.05em;
-    color: var(--charcoal);
-    background: white;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    outline: none;
-    transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
-    -webkit-appearance: none;
-    appearance: none;
-  }
-  .field-input:focus, .field-select:focus, .field-textarea:focus {
-    border-color: var(--charcoal);
-    box-shadow: 0 0 0 3px rgba(38,38,38,0.04);
-  }
-  .field-input::placeholder, .field-textarea::placeholder {
-    color: var(--light);
-    font-style: italic;
-  }
-
-  .field-textarea { resize: none; height: 90px; line-height: 1.8; }
-
-  .field-select-wrap { position: relative; }
-  .field-select-wrap::after {
-    content: '';
-    position: absolute;
-    right: 1.2rem; top: 50%;
-    transform: translateY(-50%);
-    width: 0; height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 4px solid var(--mid);
-    pointer-events: none;
-  }
-  .field-select { cursor: pointer; padding-right: 2.5rem; }
-  .field-select option { background: white; color: var(--charcoal); }
-
-  .form-cta {
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--line);
-    display: flex; flex-direction: column; gap: 0.8rem;
-  }
-  .form-cta-note {
-    font-size: 0.63rem;
-    letter-spacing: 0.1em;
-    color: var(--light);
-    text-align: center;
-  }
-
-  /* ─── PHILOSOPHY STRIP ────────────────────────────────── */
-  #filosofia {
-    background: var(--charcoal);
-    padding: clamp(3rem, 7vw, 6rem) 0;
-  }
-  #filosofia .section-eyebrow { color: var(--gold); }
-  #filosofia .section-title { color: var(--cream); }
-  #filosofia .section-sub { color: rgba(250,249,246,0.45); }
-
-  .pillars {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0;
-    margin-top: 3rem;
-    border: 1px solid rgba(250,249,246,0.08);
-  }
-
-  .pillar {
-    padding: 2.5rem 2rem;
-    border-right: 1px solid rgba(250,249,246,0.08);
-    text-align: center;
-  }
-  .pillar:last-child { border-right: none; }
-
-  .pillar-icon {
-    width: 28px; height: 28px;
-    color: var(--gold);
-    margin: 0 auto 1.2rem;
-    opacity: 0.8;
-  }
-
-  .pillar-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.05rem;
-    font-weight: 400;
-    color: var(--cream);
-    margin-bottom: 0.6rem;
-    font-style: italic;
-  }
-
-  .pillar-text {
-    font-size: 0.72rem;
-    letter-spacing: 0.06em;
-    color: rgba(250,249,246,0.4);
-    line-height: 1.9;
-  }
-
-  /* ─── FOOTER ──────────────────────────────────────────── */
-  footer {
-    background: var(--cream);
-    border-top: 1px solid var(--line);
-    padding: 3rem clamp(1.5rem, 5vw, 4rem);
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 2rem;
-    flex-wrap: wrap;
-    position: relative; z-index: 1;
-  }
-
-  .footer-logo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.3rem;
-    font-style: italic;
-    color: var(--charcoal);
-    letter-spacing: 0.05em;
-  }
-
-  .footer-copy {
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
-    color: var(--light);
-  }
-
-  /* ─── MODAL ───────────────────────────────────────────── */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(38,38,38,0.65);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 500;
-    display: flex; align-items: center; justify-content: center;
-    padding: 2rem;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.5s var(--ease);
-  }
-  .modal-overlay.open { opacity: 1; pointer-events: all; }
-
-  .modal {
-    background: var(--cream);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    max-width: 500px; width: 100%;
-    padding: 3.5rem;
-    text-align: center;
-    transform: translateY(20px);
-    transition: transform 0.5s var(--ease);
-    position: relative;
-  }
-  .modal-overlay.open .modal { transform: translateY(0); }
-
-  .modal-icon {
-    width: 56px; height: 56px;
-    background: var(--bone);
-    border: 1px solid var(--line);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 2rem;
-    color: var(--gold);
-  }
-
-  .modal-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.9rem;
-    font-style: italic;
-    color: var(--charcoal);
-    margin-bottom: 0.8rem;
-  }
-
-  .modal-text {
-    font-size: 0.78rem;
-    letter-spacing: 0.06em;
-    color: var(--mid);
-    line-height: 2;
-    margin-bottom: 2rem;
-  }
-
-  .modal-summary {
-    background: white;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    text-align: left;
-  }
-  .modal-summary-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 0.4rem 0;
-  }
-  .modal-summary-row + .modal-summary-row {
-    border-top: 1px solid var(--line);
-    margin-top: 0.4rem;
-  }
-  .modal-summary-key {
-    font-size: 0.6rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--light);
-  }
-  .modal-summary-val {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1rem;
-    color: var(--charcoal);
-  }
-
-  .modal-actions { display: flex; flex-direction: column; gap: 0.8rem; }
-
-  .modal-close {
-    position: absolute; top: 1.2rem; right: 1.2rem;
-    background: none; border: none; cursor: pointer;
-    color: var(--light); font-size: 1.2rem;
-    transition: color 0.3s var(--ease);
-    line-height: 1;
-  }
-  .modal-close:hover { color: var(--charcoal); }
-
-  /* ─── VALIDATION ──────────────────────────────────────── */
-  .field-group.error .field-input,
-  .field-group.error .field-select { border-color: #c0392b; }
-  .field-error {
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
-    color: #c0392b;
-    margin-top: 0.4rem;
-    display: none;
-  }
-  .field-group.error .field-error { display: block; }
-
-  /* ─── TOAST ───────────────────────────────────────────── */
-  .toast {
-    position: fixed; bottom: 2rem; right: 2rem;
-    background: var(--charcoal);
-    color: var(--cream);
-    padding: 1rem 1.8rem;
-    border-radius: var(--radius);
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    z-index: 600;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.4s var(--ease);
-    pointer-events: none;
-    max-width: 300px;
-  }
-  .toast.show { opacity: 1; transform: translateY(0); }
-
-  /* ─── SCROLL INDICATOR ────────────────────────────────── */
-  .scroll-hint {
-    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
-    margin-top: 4rem;
-    opacity: 0;
-    animation: fadeIn 1s var(--ease) 1.5s forwards;
-  }
-  .scroll-hint span {
-    font-size: 0.55rem;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--light);
-  }
-  .scroll-line {
-    width: 1px; height: 48px;
-    background: linear-gradient(to bottom, var(--charcoal), transparent);
-    animation: scrollLine 2s var(--ease) infinite;
-  }
-
-  /* ─── ANIMATIONS ──────────────────────────────────────── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-  @keyframes scrollLine {
-    0%   { transform: scaleY(0) translateY(-100%); transform-origin: top; opacity: 1; }
-    50%  { transform: scaleY(1) translateY(0); opacity: 1; }
-    100% { transform: scaleY(0) translateY(100%); opacity: 0; }
-  }
-
-  .reveal {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
-  }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
-
-  /* ─── RESPONSIVE ──────────────────────────────────────── */
-  @media (max-width: 768px) {
-    .hero-inner { grid-template-columns: 1fr; }
-    .hero-visual { display: none; }
-    .booking-layout { grid-template-columns: 1fr; gap: 2rem; }
-    nav { display: none; }
-    .pillar { border-right: none; border-bottom: 1px solid rgba(250,249,246,0.08); }
-    .pillar:last-child { border-bottom: none; }
-    .modal { padding: 2.5rem 1.8rem; }
-    footer { justify-content: center; text-align: center; }
-  }
-
-  @media (max-width: 480px) {
-    .slots-grid { grid-template-columns: repeat(2, 1fr); }
-    .services-grid { gap: 0; }
-    .service-card { border-bottom: 1px solid var(--line); }
-  }
+/* ═══════════════════════════════════════════════════════════
+   RESET & VARIABLES
+═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* — Void (outer dark background) — */
+  --void:          #0c0a07;
+  --void-mid:      #141009;
+  --void-surface:  #1c160e;
+  --void-raised:   #231b10;
+
+  /* — Parchment (content layer) — */
+  --parch:         #ede1bc;
+  --parch-warm:    #e0ce9e;
+  --parch-aged:    #c9b47a;
+  --parch-shadow:  #b09660;
+  --parch-burn:    #6b4820;
+
+  /* — Ink — */
+  --ink:           #150f07;
+  --ink-mid:       #2c1e0c;
+  --ink-faded:     #4a3418;
+  --ink-pale:      #7a5e38;
+
+  /* — Gold Leaf — */
+  --gold:          #b8893a;
+  --gold-bright:   #d4a84e;
+  --gold-pale:     #e8cfa0;
+  --gold-dim:      #7d5f28;
+  --gold-glow:     rgba(184,137,58,0.18);
+
+  /* — Wax / Seal — */
+  --seal:          #6e1a1a;
+  --seal-bright:   #8a2222;
+  --seal-light:    #c04040;
+
+  /* — Lines — */
+  --line-parch:    rgba(100, 70, 30, 0.25);
+  --line-dark:     rgba(20, 14, 6, 0.5);
+  --line-gold:     rgba(184, 137, 58, 0.35);
+
+  --ease:          cubic-bezier(0.3, 0, 0.2, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --radius-hard:   2px;
+}
+
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  background: var(--void);
+  color: var(--ink);
+  font-family: 'IM Fell English', Georgia, serif;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ═══ CONSTELLATION CANVAS ════════════════════════════════ */
+#constellation {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* ═══ TYPOGRAPHY ══════════════════════════════════════════ */
+h1 {
+  font-family: 'Eagle Lake', serif;
+  font-size: clamp(2.6rem, 7vw, 5.5rem);
+  line-height: 1.12;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  text-shadow:
+    1px 2px 4px rgba(21, 15, 7, 0.35),
+    0 0 12px rgba(21, 15, 7, 0.12);
+}
+h2 {
+  font-family: 'Eagle Lake', serif;
+  font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+  line-height: 1.2;
+  letter-spacing: 0.015em;
+  color: var(--ink);
+  text-shadow: 1px 1px 3px rgba(21, 15, 7, 0.25);
+}
+h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+}
+p {
+  font-family: 'IM Fell English', serif;
+  font-size: 0.92rem;
+  font-style: italic;
+  color: var(--ink-faded);
+  line-height: 1.85;
+}
+label, .label-text, .field-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--ink-pale);
+}
+
+/* ═══ LAYOUT ══════════════════════════════════════════════ */
+.container { max-width: 1100px; margin: 0 auto; padding: 0 clamp(1.5rem, 5vw, 4rem); }
+
+/* ─ All sections sit on a parchment base ─ */
+section {
+  position: relative;
+  z-index: 1;
+  padding: clamp(4rem, 10vw, 8rem) 0;
+}
+
+/* The shared parchment band behind content */
+.parchment-band {
+  background:
+    radial-gradient(ellipse at 0% 0%,   rgba(30,15,0,0.45) 0%, transparent 22%),
+    radial-gradient(ellipse at 100% 0%,  rgba(30,15,0,0.4)  0%, transparent 20%),
+    radial-gradient(ellipse at 0% 100%,  rgba(30,15,0,0.5)  0%, transparent 20%),
+    radial-gradient(ellipse at 100% 100%,rgba(30,15,0,0.55) 0%, transparent 22%),
+    radial-gradient(ellipse at 30% 70%,  rgba(140,100,40,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 25%,  rgba(100,70,20,0.08)  0%, transparent 45%),
+    linear-gradient(168deg, #f0e4c0 0%, #e6d49c 40%, #ddc88a 65%, #eaddb0 100%);
+}
+
+/* ═══ NOISE + GRAIN ═══════════════════════════════════════ */
+.parchment-band::before,
+.parchment-section::before {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 250px;
+}
+
+.parchment-section {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 0% 0%,   rgba(30,15,0,0.4)  0%, transparent 20%),
+    radial-gradient(ellipse at 100% 0%,  rgba(30,15,0,0.38) 0%, transparent 19%),
+    radial-gradient(ellipse at 0% 100%,  rgba(30,15,0,0.45) 0%, transparent 20%),
+    radial-gradient(ellipse at 100% 100%,rgba(30,15,0,0.5)  0%, transparent 22%),
+    linear-gradient(175deg, #eedcb4 0%, #e3cc98 45%, #d9c185 65%, #e8d5a8 100%);
+}
+
+/* ═══ HEADER ══════════════════════════════════════════════ */
+header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 1.2rem clamp(1.5rem, 5vw, 4rem);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(12, 10, 7, 0.93);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(184, 137, 58, 0.2);
+}
+
+/* Ornamental top border on header */
+header::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold) 20%, var(--gold-bright) 50%, var(--gold) 80%, transparent 100%);
+  opacity: 0.6;
+}
+
+.logo {
+  font-family: 'Eagle Lake', serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  text-decoration: none;
+  text-shadow: 0 0 20px rgba(184,137,58,0.4);
+  display: flex; align-items: center; gap: 0.9rem;
+}
+.logo-sep {
+  display: inline-block; width: 1px; height: 1rem;
+  background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+  opacity: 0.5;
+}
+.logo-sub {
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  display: block;
+  margin-top: 0.1rem;
+}
+
+nav { display: flex; gap: 2.5rem; align-items: center; }
+nav a {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(184,137,58,0.6);
+  text-decoration: none;
+  transition: color 0.4s var(--ease);
+}
+nav a:hover { color: var(--gold-bright); }
+
+/* ═══ HERO ════════════════════════════════════════════════ */
+#hero {
+  min-height: 100svh;
+  display: flex; align-items: center;
+  padding-top: 80px;
+  position: relative; z-index: 1;
+}
+
+/* Dark void hero - no parchment, stars show through */
+#hero .container { position: relative; z-index: 2; width: 100%; }
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.hero-text {
+  opacity: 0;
+  animation: inkReveal 1.4s var(--ease) 0.4s forwards;
+}
+
+.hero-eyebrow {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 2rem;
+  display: flex; align-items: center; gap: 1rem;
+  text-shadow: 0 0 15px rgba(184,137,58,0.5);
+}
+.hero-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 2.5rem; height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold));
+}
+
+/* On dark void, h1 gets light parchment color */
+#hero h1 {
+  color: var(--parch);
+  text-shadow:
+    2px 3px 6px rgba(0,0,0,0.7),
+    0 0 30px rgba(184,137,58,0.12);
+  margin-bottom: 2rem;
+}
+
+.hero-subtitle {
+  color: rgba(237, 225, 188, 0.5);
+  font-style: italic;
+  font-size: 0.9rem;
+  max-width: 38ch;
+  margin-bottom: 3rem;
+  line-height: 2;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+/* Hero grimoire sigil visual */
+.hero-visual {
+  opacity: 0;
+  animation: inkReveal 2s var(--ease) 0.8s forwards;
+  display: flex; justify-content: center; align-items: center;
+}
+
+.sigil-ring {
+  width: min(420px, 90%);
+  aspect-ratio: 1;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  animation: sigilRotate 80s linear infinite;
+}
+
+.sigil-svg { width: 100%; }
+
+/* ═══ ORNAMENTAL DIVIDER ══════════════════════════════════ */
+.orn-divider {
+  display: flex; align-items: center;
+  gap: 0; overflow: hidden;
+  margin: 0 auto;
+  width: 100%;
+}
+.orn-line {
+  flex: 1; height: 1px;
+  background: linear-gradient(to right, transparent, var(--line-gold), transparent);
+}
+.orn-symbol {
+  padding: 0 1.2rem;
+  color: var(--gold);
+  opacity: 0.7;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+/* Corner ornaments for sections */
+.corner-ornament {
+  position: absolute;
+  width: 55px; height: 55px;
+  pointer-events: none; z-index: 3;
+}
+.corner-ornament.tl { top: 1.2rem; left: 1.2rem; }
+.corner-ornament.tr { top: 1.2rem; right: 1.2rem; transform: scaleX(-1); }
+.corner-ornament.bl { bottom: 1.2rem; left: 1.2rem; transform: scaleY(-1); }
+.corner-ornament.br { bottom: 1.2rem; right: 1.2rem; transform: scale(-1); }
+
+/* ═══ SECTION HEADERS ═════════════════════════════════════ */
+.section-header { text-align: center; margin-bottom: clamp(2.5rem, 6vw, 5rem); }
+
+.section-eyebrow {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+  text-shadow: 0 0 12px rgba(184,137,58,0.3);
+}
+.section-title { margin-bottom: 1rem; }
+.section-sub { max-width: 44ch; margin: 0.5rem auto 0; }
+
+/* ═══ BUTTONS ═════════════════════════════════════════════ */
+.btn {
+  display: inline-block;
+  padding: 0.9rem 2.2rem;
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.6s var(--ease);
+  border-radius: var(--radius-hard);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Wax Seal / Dark Button */
+.btn-primary {
+  background: radial-gradient(ellipse at 40% 30%, #8a2828, var(--seal) 55%, #3d0e0e);
+  color: var(--parch);
+  border: 1px solid rgba(110, 26, 26, 0.8);
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.btn-primary::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 55%);
+  pointer-events: none;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 40% 30%, #a53030, #8a1a1a 55%, #4d1212);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease);
+}
+.btn-primary:hover::after { opacity: 1; }
+.btn-primary span { position: relative; z-index: 1; }
+
+/* Gold Seal Button */
+.btn-gold {
+  background: radial-gradient(ellipse at 40% 30%, #c9a040, var(--gold) 55%, #7d5f20);
+  color: var(--ink);
+  border: 1px solid var(--gold-dim);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+}
+.btn-gold::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 40% 30%, #ddb855, #b8893a 55%, #8a6828);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease);
+}
+.btn-gold:hover::after { opacity: 1; }
+.btn-gold span { position: relative; z-index: 1; }
+
+/* Outline / Parchment Button */
+.btn-outline {
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--line-gold);
+}
+.btn-outline:hover {
+  background: rgba(184,137,58,0.08);
+  border-color: var(--gold);
+  color: var(--gold-bright);
+}
+
+/* ═══ SERVICES SECTION ════════════════════════════════════ */
+#servicios { overflow: hidden; }
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 2px;
+  border: 1px solid var(--line-parch);
+  background: var(--line-parch);
+}
+
+.service-card {
+  background: linear-gradient(155deg, #f2e6c5 0%, #e8d49e 50%, #f0e3bb 100%);
+  padding: 2.8rem 2.2rem;
+  cursor: pointer;
+  transition: background 0.65s var(--ease), box-shadow 0.65s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Age spots / foxing on individual cards */
+.service-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 5% 8%, rgba(100,65,20,0.12) 0%, transparent 30%),
+    radial-gradient(circle at 95% 92%, rgba(80,50,15,0.15) 0%, transparent 28%);
+  pointer-events: none; z-index: 0;
+  transition: opacity 0.65s var(--ease);
+}
+.service-card.selected::before { opacity: 0; }
+
+/* Ink reveal lines (decorative ruled lines) */
+.service-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.6s var(--ease);
+}
+.service-card:hover::after, .service-card.selected::after { transform: scaleX(1); }
+
+.service-card:hover {
+  background: linear-gradient(155deg, #1e140a 0%, #15100a 50%, #1a1208 100%);
+  box-shadow: 0 0 30px rgba(0,0,0,0.6), inset 0 0 50px rgba(0,0,0,0.4);
+}
+.service-card.selected {
+  background: linear-gradient(155deg, #1e140a 0%, #15100a 50%, #1a1208 100%);
+  box-shadow: 0 0 0 1px var(--gold-dim), 0 0 30px rgba(0,0,0,0.6), inset 0 0 60px rgba(0,0,0,0.5);
+}
+
+.service-card-inner { position: relative; z-index: 1; }
+
+.service-card-icon {
+  width: 36px; height: 36px;
+  margin-bottom: 1.8rem;
+  color: var(--ink-pale);
+  transition: color 0.65s var(--ease);
+}
+.service-card:hover .service-card-icon,
+.service-card.selected .service-card-icon { color: var(--gold); }
+
+.service-card-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  margin-bottom: 0.8rem;
+  transition: color 0.65s var(--ease);
+  text-shadow: 0 1px 2px rgba(21,15,7,0.2);
+}
+.service-card:hover .service-card-title,
+.service-card.selected .service-card-title { color: var(--parch); }
+
+.service-card-desc {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 0.82rem;
+  line-height: 1.9;
+  color: var(--ink-faded);
+  margin-bottom: 2rem;
+  transition: color 0.65s var(--ease);
+}
+.service-card:hover .service-card-desc,
+.service-card.selected .service-card-desc { color: rgba(237,225,188,0.5); }
+
+.service-card-meta {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line-parch);
+  transition: border-color 0.65s var(--ease);
+}
+.service-card:hover .service-card-meta,
+.service-card.selected .service-card-meta { border-color: rgba(184,137,58,0.2); }
+
+.service-price {
+  font-family: 'Eagle Lake', serif;
+  font-size: 1.5rem;
+  color: var(--ink);
+  transition: color 0.65s var(--ease);
+  text-shadow: 1px 1px 2px rgba(21,15,7,0.2);
+}
+.service-price sup {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  vertical-align: super;
+  letter-spacing: 0.1em;
+}
+.service-card:hover .service-price,
+.service-card.selected .service-price { color: var(--gold); }
+
+.service-duration {
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-pale);
+  transition: color 0.65s var(--ease);
+}
+.service-card:hover .service-duration,
+.service-card.selected .service-duration { color: rgba(184,137,58,0.5); }
+
+.service-check {
+  position: absolute; top: 1.2rem; right: 1.2rem;
+  width: 22px; height: 22px;
+  border: 1px solid var(--line-parch);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity 0.5s var(--ease), background 0.5s var(--ease), border-color 0.5s var(--ease);
+  z-index: 2;
+}
+.service-card.selected .service-check {
+  opacity: 1;
+  background: var(--gold);
+  border-color: var(--gold);
+}
+.service-check svg { width: 10px; color: var(--ink); }
+
+/* INK BLOT SELECTION EFFECT */
+.ink-blot {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(184,137,58,0.35) 0%, transparent 70%);
+  width: 0; height: 0;
+  transform: translate(-50%, -50%);
+  animation: inkSpread 0.9s var(--ease) forwards;
+  pointer-events: none; z-index: 0;
+}
+@keyframes inkSpread {
+  0%   { width: 0; height: 0; opacity: 1; }
+  60%  { width: 300px; height: 300px; opacity: 0.6; }
+  100% { width: 500px; height: 500px; opacity: 0; }
+}
+
+/* ═══ BOOKING SECTION ═════════════════════════════════════ */
+.booking-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 3.5rem;
+  align-items: start;
+}
+
+/* ─── CALENDAR ─────────────────────────────────────────── */
+.calendar-wrap {
+  border: 1px solid var(--line-parch);
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(30,15,0,0.35) 0%, transparent 25%),
+    radial-gradient(ellipse at 100% 100%, rgba(30,15,0,0.4) 0%, transparent 25%),
+    linear-gradient(160deg, #f4e8c8 0%, #e8d8a2 50%, #f0e0b8 100%);
+  position: relative; overflow: hidden;
+}
+.calendar-wrap::before {
+  content: '';
+  position: absolute; inset: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 200px;
+  pointer-events: none; z-index: 0;
+}
+
+.calendar-header {
+  padding: 1.4rem 1.8rem;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--line-parch);
+  position: relative; z-index: 1;
+}
+
+.cal-nav {
+  background: none; border: 1px solid var(--line-parch);
+  cursor: pointer; color: var(--ink-pale);
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.4s var(--ease);
+  border-radius: var(--radius-hard);
+}
+.cal-nav:hover {
+  border-color: var(--gold-dim);
+  color: var(--gold);
+  background: rgba(184,137,58,0.06);
+}
+
+.cal-month {
+  font-family: 'Eagle Lake', serif;
+  font-size: 1rem;
+  color: var(--ink);
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(21,15,7,0.2);
+}
+.cal-month small {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.3em;
+  color: var(--ink-pale);
+  text-transform: uppercase;
+  margin-top: 0.1rem;
+  text-shadow: none;
+}
+
+.calendar-grid { padding: 1.4rem 1.8rem 1.8rem; position: relative; z-index: 1; }
+
+.cal-days-header {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 3px; margin-bottom: 0.7rem;
+}
+.cal-day-name {
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: 0.52rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-pale);
+  padding: 0.3rem;
+}
+
+.cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+
+.cal-day {
+  aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'IM Fell English', serif;
+  font-size: 0.82rem;
+  color: var(--ink);
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--radius-hard);
+  transition: all 0.35s var(--ease);
+  position: relative;
+}
+.cal-day:hover:not(.past):not(.empty) {
+  border-color: var(--gold-dim);
+  background: rgba(184,137,58,0.08);
+}
+.cal-day.past { color: rgba(74,52,24,0.3); cursor: default; pointer-events: none; }
+.cal-day.empty { cursor: default; }
+.cal-day.today {
+  color: var(--gold);
+  font-weight: 600;
+  text-shadow: 0 0 8px rgba(184,137,58,0.4);
+}
+.cal-day.selected {
+  background: var(--ink);
+  color: var(--gold);
+  border-color: var(--ink);
+  text-shadow: 0 0 10px rgba(184,137,58,0.5);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+}
+.cal-day.has-slots::after {
+  content: '';
+  position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
+  width: 3px; height: 3px;
+  background: var(--gold);
+  border-radius: 50%;
+  box-shadow: 0 0 3px var(--gold);
+}
+.cal-day.selected::after { background: var(--gold-bright); box-shadow: 0 0 5px var(--gold-bright); }
+
+.time-slots {
+  margin-top: 1.4rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--line-parch);
+}
+.time-slots-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--ink-pale);
+  margin-bottom: 0.9rem;
+}
+.slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+
+.time-slot {
+  padding: 0.6rem 0.4rem;
+  text-align: center;
+  font-family: 'IM Fell English', serif;
+  font-size: 0.8rem;
+  color: var(--ink);
+  border: 1px solid var(--line-parch);
+  border-radius: var(--radius-hard);
+  cursor: pointer;
+  transition: all 0.35s var(--ease);
+  background: rgba(255,255,255,0.15);
+}
+.time-slot:hover {
+  border-color: var(--gold-dim);
+  background: rgba(184,137,58,0.1);
+  color: var(--gold-dim);
+}
+.time-slot.selected {
+  background: var(--ink);
+  color: var(--gold);
+  border-color: var(--ink);
+  text-shadow: 0 0 8px rgba(184,137,58,0.4);
+}
+.time-slot.past {
+  color: rgba(74,52,24,0.3);
+  cursor: default; pointer-events: none;
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(100,70,30,0.12);
+}
+
+/* ─── FORM ─────────────────────────────────────────────── */
+.form-wrap { display: flex; flex-direction: column; gap: 1.6rem; }
+
+.form-summary {
+  padding: 1.4rem 1.8rem;
+  border: 1px solid var(--line-parch);
+  background: rgba(0,0,0,0.06);
+  position: relative; overflow: hidden;
+}
+.form-summary::before {
+  content: '✦';
+  position: absolute;
+  top: -6px; left: 50%; transform: translateX(-50%);
+  color: var(--gold); font-size: 0.7rem;
+  background: inherit;
+  padding: 0 0.5rem;
+}
+.form-summary-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 0.5rem;
+}
+.form-summary-value {
+  font-family: 'Eagle Lake', serif;
+  font-size: 0.95rem;
+  color: var(--ink);
+  line-height: 1.6;
+  text-shadow: 1px 1px 2px rgba(21,15,7,0.15);
+}
+.form-summary-empty {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 0.85rem;
+  color: rgba(74,52,24,0.4);
+}
+
+.field-group { position: relative; }
+.field-label {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-pale);
+  margin-bottom: 0.55rem;
+}
+
+.field-input, .field-select, .field-textarea {
+  width: 100%;
+  padding: 0.85rem 1.1rem;
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: rgba(255,255,255,0.25);
+  border: 1px solid var(--line-parch);
+  border-bottom: 1px solid var(--parch-shadow);
+  border-radius: var(--radius-hard);
+  outline: none;
+  transition: border-color 0.4s var(--ease), background 0.4s var(--ease), box-shadow 0.4s var(--ease);
+  -webkit-appearance: none; appearance: none;
+}
+.field-input::placeholder, .field-textarea::placeholder {
+  color: rgba(74,52,24,0.4);
+  font-style: italic;
+}
+.field-input:focus, .field-select:focus, .field-textarea:focus {
+  border-color: var(--gold-dim);
+  background: rgba(255,255,255,0.35);
+  box-shadow: 0 2px 8px rgba(184,137,58,0.08), inset 0 1px 3px rgba(0,0,0,0.04);
+}
+.field-textarea { resize: none; height: 85px; line-height: 1.85; }
+
+.field-select-wrap { position: relative; }
+.field-select-wrap::after {
+  content: '▾';
+  position: absolute; right: 1.1rem; top: 50%; transform: translateY(-50%);
+  color: var(--ink-pale); font-size: 0.7rem; pointer-events: none;
+}
+.field-select { cursor: pointer; padding-right: 2.5rem; }
+.field-select option { background: var(--parch); color: var(--ink); font-style: normal; }
+
+.form-cta {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line-parch);
+  display: flex; flex-direction: column; gap: 0.7rem;
+}
+.form-cta-note {
+  font-family: 'Cinzel', serif;
+  font-style: normal;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  color: rgba(74,52,24,0.5);
+  text-align: center;
+  line-height: 1.8;
+}
+
+/* Validation */
+.field-group.error .field-input,
+.field-group.error .field-select { border-color: #7a1c1c; }
+.field-error {
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: #7a1c1c;
+  margin-top: 0.35rem;
+  display: none;
+}
+.field-group.error .field-error { display: block; }
+
+/* ═══ DARK VOID SECTION (Philosophy) ═════════════════════ */
+#filosofia {
+  background: var(--void-mid);
+  position: relative;
+  border-top: 1px solid rgba(184,137,58,0.12);
+  border-bottom: 1px solid rgba(184,137,58,0.12);
+  overflow: hidden;
+}
+
+#filosofia .section-title { color: var(--parch); }
+#filosofia .section-sub { color: rgba(237,225,188,0.4); }
+
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin-top: 3rem;
+  border: 1px solid rgba(184,137,58,0.1);
+}
+.pillar {
+  padding: 2.5rem 2rem;
+  border-right: 1px solid rgba(184,137,58,0.1);
+  text-align: center;
+  transition: background 0.5s var(--ease);
+}
+.pillar:last-child { border-right: none; }
+.pillar:hover { background: rgba(184,137,58,0.04); }
+
+.pillar-icon {
+  width: 28px; height: 28px;
+  color: var(--gold);
+  margin: 0 auto 1.2rem;
+  opacity: 0.7;
+}
+.pillar-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--parch-warm);
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+}
+.pillar-text {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 0.82rem;
+  color: rgba(184,137,58,0.45);
+  line-height: 1.9;
+}
+
+/* ═══ FOOTER ══════════════════════════════════════════════ */
+footer {
+  background: var(--void);
+  border-top: 1px solid rgba(184,137,58,0.15);
+  padding: 3rem clamp(1.5rem, 5vw, 4rem);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 2rem;
+  position: relative; z-index: 1;
+}
+footer::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.3;
+}
+.footer-logo {
+  font-family: 'Eagle Lake', serif;
+  font-size: 1.2rem;
+  color: var(--gold);
+  text-shadow: 0 0 15px rgba(184,137,58,0.3);
+}
+.footer-copy {
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  color: rgba(184,137,58,0.3);
+}
+
+/* ═══ MODAL ═══════════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(8, 6, 3, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s var(--ease);
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(30,15,0,0.4) 0%, transparent 25%),
+    radial-gradient(ellipse at 100% 100%, rgba(30,15,0,0.5) 0%, transparent 25%),
+    linear-gradient(155deg, #f0e4c0 0%, #e4d09a 50%, #ecdfb4 100%);
+  border: 1px solid var(--line-parch);
+  max-width: 500px; width: 100%;
+  padding: 3.5rem;
+  text-align: center;
+  transform: translateY(25px) scale(0.97);
+  transition: transform 0.55s var(--ease-spring);
+  position: relative;
+  box-shadow:
+    0 0 0 1px rgba(100,70,30,0.2),
+    0 25px 60px rgba(0,0,0,0.8),
+    0 0 100px rgba(184,137,58,0.05);
+}
+.modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+/* Corner ornaments on modal */
+.modal-corner {
+  position: absolute;
+  width: 40px; height: 40px;
+  pointer-events: none;
+}
+.modal-corner.tl { top: 0.8rem; left: 0.8rem; }
+.modal-corner.tr { top: 0.8rem; right: 0.8rem; transform: scaleX(-1); }
+.modal-corner.bl { bottom: 0.8rem; left: 0.8rem; transform: scaleY(-1); }
+.modal-corner.br { bottom: 0.8rem; right: 0.8rem; transform: scale(-1); }
+
+.modal-icon {
+  width: 54px; height: 54px;
+  border: 1px solid var(--line-parch);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.8rem;
+  color: var(--gold);
+  background: rgba(0,0,0,0.05);
+  box-shadow: 0 0 20px rgba(184,137,58,0.1);
+}
+.modal-title {
+  font-family: 'Eagle Lake', serif;
+  font-size: 1.7rem;
+  color: var(--ink);
+  margin-bottom: 0.7rem;
+  text-shadow: 1px 2px 4px rgba(21,15,7,0.25);
+}
+.modal-text {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--ink-faded);
+  line-height: 2;
+  margin-bottom: 1.8rem;
+}
+.modal-summary {
+  background: rgba(0,0,0,0.07);
+  border: 1px solid var(--line-parch);
+  padding: 1.4rem;
+  margin-bottom: 1.8rem;
+  text-align: left;
+}
+.modal-summary-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 0.35rem 0;
+}
+.modal-summary-row + .modal-summary-row {
+  border-top: 1px solid var(--line-parch);
+  margin-top: 0.35rem;
+}
+.modal-summary-key {
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-pale);
+}
+.modal-summary-val {
+  font-family: 'IM Fell English', serif;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.modal-actions { display: flex; flex-direction: column; gap: 0.7rem; }
+
+.modal-close {
+  position: absolute; top: 1rem; right: 1rem;
+  background: none; border: none; cursor: pointer;
+  color: var(--ink-pale); font-size: 1.1rem;
+  transition: color 0.3s;
+  line-height: 1;
+  font-family: serif;
+}
+.modal-close:hover { color: var(--ink); }
+
+/* ═══ TOAST ═══════════════════════════════════════════════ */
+.toast {
+  position: fixed; bottom: 2rem; right: 2rem;
+  background: radial-gradient(ellipse at 30% 30%, var(--void-raised), var(--void-mid));
+  color: var(--gold-pale);
+  border: 1px solid rgba(184,137,58,0.25);
+  padding: 0.9rem 1.6rem;
+  font-family: 'Cinzel', serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  z-index: 600;
+  opacity: 0; transform: translateY(10px);
+  transition: all 0.45s var(--ease);
+  pointer-events: none; max-width: 300px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ═══ SCROLL HINT ═════════════════════════════════════════ */
+.scroll-hint {
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  margin-top: 4rem;
+  opacity: 0;
+  animation: inkReveal 1s var(--ease) 2s forwards;
+}
+.scroll-hint span {
+  font-family: 'Cinzel', serif;
+  font-size: 0.52rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(184,137,58,0.4);
+}
+.scroll-line {
+  width: 1px; height: 48px;
+  background: linear-gradient(to bottom, var(--gold), transparent);
+  animation: scrollLine 2.2s var(--ease) infinite;
+  opacity: 0.5;
+}
+
+/* ═══ ANIMATIONS ══════════════════════════════════════════ */
+@keyframes inkReveal {
+  from { opacity: 0; transform: translateY(20px); filter: blur(1px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+@keyframes scrollLine {
+  0%   { transform: scaleY(0) translateY(-100%); transform-origin: top; opacity: 0.8; }
+  50%  { transform: scaleY(1) translateY(0);     opacity: 0.5; }
+  100% { transform: scaleY(0) translateY(100%);  opacity: 0; }
+}
+@keyframes sigilRotate { to { transform: rotate(360deg); } }
+@keyframes sigilCounter { to { transform: rotate(-360deg); } }
+@keyframes flickerGold {
+  0%,100% { opacity: 0.7; }
+  50%      { opacity: 1; }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 1s var(--ease), transform 1s var(--ease);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .hero-inner { grid-template-columns: 1fr; }
+  .hero-visual { display: none; }
+  .booking-layout { grid-template-columns: 1fr; gap: 2rem; }
+  nav { display: none; }
+  .pillar { border-right: none; border-bottom: 1px solid rgba(184,137,58,0.1); }
+  .pillar:last-child { border-bottom: none; }
+  .modal { padding: 2.5rem 1.6rem; }
+  footer { justify-content: center; text-align: center; }
+}
+@media (max-width: 480px) {
+  .slots-grid { grid-template-columns: repeat(2, 1fr); }
+  .services-grid { gap: 0; background: var(--line-parch); }
+  .service-card { border-bottom: 1px solid var(--line-parch); }
+}
 </style>
 </head>
 <body>
 
+<!-- ░░ CONSTELLATION BACKGROUND ░░ -->
+<svg id="constellation" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+
 <!-- ░░ HEADER ░░ -->
 <header>
-  <a href="#" class="logo">Sanctum<span></span>Holístico</a>
+  <a href="#" class="logo">
+    <span>
+      Sanctum Obscura
+      <small class="logo-sub">Grimorio de Citas</small>
+    </span>
+  </a>
   <nav>
-    <a href="#servicios">Servicios</a>
-    <a href="#reserva">Reservas</a>
-    <a href="#filosofia">Filosofía</a>
+    <a href="#servicios">Ritos</a>
+    <a href="#reserva">Grimorio</a>
+    <a href="#filosofia">Doctrina</a>
   </nav>
-  <a href="#reserva" class="btn btn-outline" style="padding:0.55rem 1.4rem;">Solicitar Cita</a>
+  <a href="#reserva" class="btn btn-outline" style="padding:0.5rem 1.3rem;font-size:0.58rem;">Solicitar Cita</a>
 </header>
 
-<!-- ░░ HERO ░░ -->
+<!-- ░░ HERO (dark void - stars visible) ░░ -->
 <section id="hero">
   <div class="container">
     <div class="hero-inner">
       <div class="hero-text">
         <p class="hero-eyebrow">Portal de Reservas Exclusivo</p>
         <h1>Tu Espacio<br>de Conexión<br>Elevada</h1>
-        <p class="hero-subtitle">Un entorno de consciencia expandida, diseñado para quienes buscan transformación profunda a través de prácticas ancestrales de alto nivel.</p>
+        <p class="hero-subtitle">Un santuario de consciencia expandida, donde los ritos ancestrales de alto nivel abren los umbrales del alma hacia su más profunda transformación.</p>
         <a href="#reserva" class="btn btn-primary"><span>Solicitar Cita →</span></a>
         <div class="scroll-hint">
           <div class="scroll-line"></div>
-          <span>Explorar</span>
+          <span>Descender</span>
         </div>
       </div>
       <div class="hero-visual">
-        <div class="hero-emblem">
-          <!-- Sacred geometry SVG -->
-          <svg class="emblem-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="100" cy="100" r="80" stroke="#C9A96E" stroke-width="0.5"/>
-            <circle cx="100" cy="60" r="40" stroke="#C9A96E" stroke-width="0.5"/>
-            <circle cx="65.4" cy="80" r="40" stroke="#C9A96E" stroke-width="0.5"/>
-            <circle cx="134.6" cy="80" r="40" stroke="#C9A96E" stroke-width="0.5"/>
-            <circle cx="65.4" cy="120" r="40" stroke="#C9A96E" stroke-width="0.5"/>
-            <circle cx="134.6" cy="120" r="40" stroke="#C9A96E" stroke-width="0.5"/>
-            <circle cx="100" cy="140" r="40" stroke="#C9A96E" stroke-width="0.5"/>
-            <circle cx="100" cy="100" r="40" stroke="#C9A96E" stroke-width="0.75"/>
-            <polygon points="100,30 164,65 164,135 100,170 36,135 36,65" stroke="#C9A96E" stroke-width="0.4" fill="none"/>
-            <line x1="100" y1="30" x2="100" y2="170" stroke="#C9A96E" stroke-width="0.3"/>
-            <line x1="36" y1="65" x2="164" y2="135" stroke="#C9A96E" stroke-width="0.3"/>
-            <line x1="164" y1="65" x2="36" y2="135" stroke="#C9A96E" stroke-width="0.3"/>
-            <circle cx="100" cy="100" r="4" fill="#C9A96E" fill-opacity="0.5"/>
-          </svg>
-        </div>
+        <!-- Animated grimoire sigil -->
+        <svg class="sigil-svg" viewBox="0 0 440 440" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Outer ring (rotates) -->
+          <g style="transform-origin:220px 220px; animation: sigilRotate 90s linear infinite;">
+            <circle cx="220" cy="220" r="210" stroke="#b8893a" stroke-width="0.6" stroke-dasharray="4 8"/>
+            <!-- Zodiac tick marks -->
+            <g stroke="#b8893a" stroke-width="0.8" opacity="0.6">
+              <line x1="220" y1="10" x2="220" y2="26"/>
+              <line x1="220" y1="10" x2="220" y2="26" transform="rotate(30 220 220)"/>
+              <line x1="220" y1="10" x2="220" y2="26" transform="rotate(60 220 220)"/>
+              <line x1="220" y1="10" x2="220" y2="26" transform="rotate(90 220 220)"/>
+              <line x1="220" y1="10" x2="220" y2="26" transform="rotate(120 220 220)"/>
+              <line x1="220" y1="10" x2="220" y2="26" transform="rotate(150 220 220)"/>
+              <line x1="220" y1="10" x2="220" y2="26" transform="rotate(180 220 220)"/>
+              <line x1="220" y1="10" x2="220" y2="26" transform="rotate(210 220 220)"/>
+              <line x1="220" y1="10" x2="220" y2="26" transform="rotate(240 220 220)"/>
+              <line x1="220" y1="10" x2="220" y2="26" transform="rotate(270 220 220)"/>
+              <line x1="220" y1="10" x2="220" y2="26" transform="rotate(300 220 220)"/>
+              <line x1="220" y1="10" x2="220" y2="26" transform="rotate(330 220 220)"/>
+            </g>
+          </g>
+          <!-- Middle ring (counter-rotates) -->
+          <g style="transform-origin:220px 220px; animation: sigilCounter 60s linear infinite;">
+            <circle cx="220" cy="220" r="175" stroke="#b8893a" stroke-width="0.5" opacity="0.5"/>
+            <polygon points="220,45 375,132.5 375,307.5 220,395 65,307.5 65,132.5" stroke="#b8893a" stroke-width="0.6" fill="none" opacity="0.4"/>
+          </g>
+          <!-- Inner geometry (static) -->
+          <circle cx="220" cy="220" r="140" stroke="#b8893a" stroke-width="0.5" opacity="0.35"/>
+          <!-- Star of David / hexagram -->
+          <polygon points="220,80 310,245 130,245" stroke="#b8893a" stroke-width="0.7" fill="none" opacity="0.5"/>
+          <polygon points="220,360 130,195 310,195" stroke="#b8893a" stroke-width="0.7" fill="none" opacity="0.5"/>
+          <!-- Inner circle -->
+          <circle cx="220" cy="220" r="90" stroke="#b8893a" stroke-width="0.4" opacity="0.3"/>
+          <!-- Flower of life seed circles -->
+          <circle cx="220" cy="175" r="45" stroke="#b8893a" stroke-width="0.4" opacity="0.25"/>
+          <circle cx="259" cy="197.5" r="45" stroke="#b8893a" stroke-width="0.4" opacity="0.25"/>
+          <circle cx="259" cy="242.5" r="45" stroke="#b8893a" stroke-width="0.4" opacity="0.25"/>
+          <circle cx="220" cy="265" r="45" stroke="#b8893a" stroke-width="0.4" opacity="0.25"/>
+          <circle cx="181" cy="242.5" r="45" stroke="#b8893a" stroke-width="0.4" opacity="0.25"/>
+          <circle cx="181" cy="197.5" r="45" stroke="#b8893a" stroke-width="0.4" opacity="0.25"/>
+          <!-- Center dot -->
+          <circle cx="220" cy="220" r="4" fill="#b8893a" fill-opacity="0.7"/>
+          <circle cx="220" cy="220" r="8" stroke="#b8893a" stroke-width="0.5" opacity="0.5"/>
+          <!-- Four cardinal crosses -->
+          <line x1="220" y1="80" x2="220" y2="360" stroke="#b8893a" stroke-width="0.3" opacity="0.2"/>
+          <line x1="80" y1="220" x2="360" y2="220" stroke="#b8893a" stroke-width="0.3" opacity="0.2"/>
+        </svg>
       </div>
     </div>
   </div>
 </section>
 
+<!-- ░░ ALCHEMICAL TRANSITION BAND ░░ -->
+<div style="position:relative;z-index:1;padding:1.5rem 0;background:var(--void-mid);border-top:1px solid rgba(184,137,58,0.1);border-bottom:1px solid rgba(184,137,58,0.08);">
+  <div class="container">
+    <div class="orn-divider">
+      <div class="orn-line"></div>
+      <svg class="orn-symbol" width="80" height="24" viewBox="0 0 120 24" fill="none">
+        <text x="0" y="18" fill="#b8893a" opacity="0.7" font-size="14" font-family="serif">☿</text>
+        <line x1="22" y1="12" x2="38" y2="12" stroke="#b8893a" stroke-width="0.7" opacity="0.5"/>
+        <circle cx="50" cy="12" r="5" stroke="#b8893a" stroke-width="0.7" opacity="0.6"/>
+        <line x1="62" y1="12" x2="78" y2="12" stroke="#b8893a" stroke-width="0.7" opacity="0.5"/>
+        <text x="82" y="18" fill="#b8893a" opacity="0.7" font-size="14" font-family="serif">♄</text>
+        <line x1="104" y1="12" x2="120" y2="12" stroke="#b8893a" stroke-width="0.7" opacity="0.5"/>
+      </svg>
+      <div class="orn-line"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ░░ SERVICES ░░ -->
-<section id="servicios">
+<section id="servicios" class="parchment-section">
+  <!-- Corner ornaments -->
+  <svg class="corner-ornament tl" viewBox="0 0 55 55" fill="none"><path d="M2 2 L28 2" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 2 L2 28" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 12 Q12 12 12 2" stroke="#b8893a" stroke-width="0.5" fill="none" opacity="0.5"/><circle cx="2" cy="2" r="2" fill="#b8893a" opacity="0.5"/><circle cx="28" cy="2" r="1" fill="#b8893a" opacity="0.4"/><circle cx="2" cy="28" r="1" fill="#b8893a" opacity="0.4"/></svg>
+  <svg class="corner-ornament tr" viewBox="0 0 55 55" fill="none"><path d="M2 2 L28 2" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 2 L2 28" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 12 Q12 12 12 2" stroke="#b8893a" stroke-width="0.5" fill="none" opacity="0.5"/><circle cx="2" cy="2" r="2" fill="#b8893a" opacity="0.5"/></svg>
+  <svg class="corner-ornament bl" viewBox="0 0 55 55" fill="none"><path d="M2 2 L28 2" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 2 L2 28" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 12 Q12 12 12 2" stroke="#b8893a" stroke-width="0.5" fill="none" opacity="0.5"/><circle cx="2" cy="2" r="2" fill="#b8893a" opacity="0.5"/></svg>
+  <svg class="corner-ornament br" viewBox="0 0 55 55" fill="none"><path d="M2 2 L28 2" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 2 L2 28" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 12 Q12 12 12 2" stroke="#b8893a" stroke-width="0.5" fill="none" opacity="0.5"/><circle cx="2" cy="2" r="2" fill="#b8893a" opacity="0.5"/></svg>
+
   <div class="container">
     <div class="section-header reveal">
-      <p class="section-eyebrow">Catálogo de Experiencias</p>
-      <h2 class="section-title">Servicios Curados</h2>
-      <p class="section-sub">Cada sesión es diseñada como un rito de paso personal, con intención, precisión y presencia total.</p>
+      <p class="section-eyebrow">✦ &nbsp; Catálogo de Ritos &nbsp; ✦</p>
+      <h2 class="section-title">Experiencias Curadas</h2>
+      <div class="orn-divider" style="max-width:320px;margin:1rem auto;">
+        <div class="orn-line"></div>
+        <span class="orn-symbol" style="font-size:0.7rem;padding:0 0.8rem;">◈</span>
+        <div class="orn-line"></div>
+      </div>
+      <p class="section-sub">Cada sesión es concebida como un rito de paso, conducida con precisión, devoción y presencia absoluta.</p>
     </div>
 
     <div class="services-grid reveal">
 
-      <div class="service-card" data-service="Experiencia de Tarot Integral" data-price="USD 120" data-duration="90 min" onclick="selectService(this)">
-        <div class="service-check">
-          <svg viewBox="0 0 10 8" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 3.5,7 9,1"/></svg>
-        </div>
-        <svg class="service-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-          <rect x="4" y="2" width="10" height="16" rx="1"/>
-          <path d="M9 6l1.5 2L13 5m0 5H7m0 3h4"/>
-          <path d="M14 6h4a1 1 0 011 1v13a1 1 0 01-1 1H9a1 1 0 01-1-1v-2"/>
-        </svg>
-        <h3 class="service-card-title">Experiencia de Tarot Integral</h3>
-        <p class="service-card-desc">Una lectura profunda y multidimensional que integra arquetipos junguianos, numerología esotérica y análisis de patrones kármicos para revelar el mapa de tu proceso interior actual.</p>
-        <div class="service-card-meta">
-          <span class="service-price"><sup>USD</sup> 120</span>
-          <span class="service-duration">90 minutos</span>
-        </div>
-      </div>
-
-      <div class="service-card" data-service="Armonización Energética Premium" data-price="USD 180" data-duration="120 min" onclick="selectService(this)">
-        <div class="service-check">
-          <svg viewBox="0 0 10 8" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 3.5,7 9,1"/></svg>
-        </div>
-        <svg class="service-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-          <circle cx="12" cy="12" r="9"/>
-          <path d="M12 3C12 3 8 7 8 12s4 9 4 9"/>
-          <path d="M3 12h18"/>
-          <circle cx="12" cy="12" r="3"/>
-        </svg>
-        <h3 class="service-card-title">Armonización Energética Premium</h3>
-        <p class="service-card-desc">Sesión de reequilibrio del campo áurico mediante técnicas de biomagnetismo, reiki avanzado y alineación de chakras con cristales de alta vibración, en un entorno de ceremonia.</p>
-        <div class="service-card-meta">
-          <span class="service-price"><sup>USD</sup> 180</span>
-          <span class="service-duration">120 minutos</span>
+      <div class="service-card" data-service="Experiencia de Tarot Integral" data-price="USD 120" data-duration="90 min" onclick="selectService(this, event)">
+        <div class="service-card-inner">
+          <div class="service-check">
+            <svg viewBox="0 0 10 8" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 3.5,7 9,1"/></svg>
+          </div>
+          <svg class="service-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="5" y="2" width="10" height="16" rx="1"/>
+            <path d="M9 6l1.5 2L13 5m0 5H7m0 3h4"/>
+            <path d="M15 6h3a1 1 0 011 1v13a1 1 0 01-1 1H9a1 1 0 01-1-1v-2"/>
+          </svg>
+          <h3 class="service-card-title">Experiencia de Tarot Integral</h3>
+          <p class="service-card-desc">Lectura profunda que integra arquetipos junguianos, numerología esotérica y patrones kármicos para revelar el mapa de tu proceso interior actual.</p>
+          <div class="service-card-meta">
+            <span class="service-price"><sup>USD</sup> 120</span>
+            <span class="service-duration">90 minutos</span>
+          </div>
         </div>
       </div>
 
-      <div class="service-card" data-service="Viaje Akáshico Guiado" data-price="USD 220" data-duration="150 min" onclick="selectService(this)">
-        <div class="service-check">
-          <svg viewBox="0 0 10 8" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 3.5,7 9,1"/></svg>
+      <div class="service-card" data-service="Armonización Energética Premium" data-price="USD 180" data-duration="120 min" onclick="selectService(this, event)">
+        <div class="service-card-inner">
+          <div class="service-check">
+            <svg viewBox="0 0 10 8" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 3.5,7 9,1"/></svg>
+          </div>
+          <svg class="service-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 3C12 3 8 7 8 12s4 9 4 9"/>
+            <path d="M3 12h18"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <h3 class="service-card-title">Armonización Energética Premium</h3>
+          <p class="service-card-desc">Reequilibrio del campo áurico mediante biomagnetismo, reiki avanzado y alineación de chakras con cristales de alta vibración, en entorno ceremonial.</p>
+          <div class="service-card-meta">
+            <span class="service-price"><sup>USD</sup> 180</span>
+            <span class="service-duration">120 minutos</span>
+          </div>
         </div>
-        <svg class="service-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-          <path d="M2 17l10 5 10-5"/>
-          <path d="M2 12l10 5 10-5"/>
-        </svg>
-        <h3 class="service-card-title">Viaje Akáshico Guiado</h3>
-        <p class="service-card-desc">Acceso profundo a los Registros Akáshicos del alma para explorar patrones de vidas pasadas, contratos del alma, misión de vida y bloqueos transgeneracionales con guía experta y compasiva.</p>
-        <div class="service-card-meta">
-          <span class="service-price"><sup>USD</sup> 220</span>
-          <span class="service-duration">150 minutos</span>
+      </div>
+
+      <div class="service-card" data-service="Viaje Akáshico Guiado" data-price="USD 220" data-duration="150 min" onclick="selectService(this, event)">
+        <div class="service-card-inner">
+          <div class="service-check">
+            <svg viewBox="0 0 10 8" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 3.5,7 9,1"/></svg>
+          </div>
+          <svg class="service-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+          <h3 class="service-card-title">Viaje Akáshico Guiado</h3>
+          <p class="service-card-desc">Acceso profundo a los Registros del alma para explorar vidas pasadas, contratos del alma, misión de vida y bloqueos transgeneracionales con guía experta.</p>
+          <div class="service-card-meta">
+            <span class="service-price"><sup>USD</sup> 220</span>
+            <span class="service-duration">150 minutos</span>
+          </div>
         </div>
       </div>
 
@@ -995,30 +1306,57 @@
   </div>
 </section>
 
+<!-- ░░ TRANSITION BAND ░░ -->
+<div style="position:relative;z-index:1;padding:1.5rem 0;background:var(--void-mid);border-top:1px solid rgba(184,137,58,0.08);border-bottom:1px solid rgba(184,137,58,0.1);">
+  <div class="container">
+    <div class="orn-divider">
+      <div class="orn-line"></div>
+      <svg class="orn-symbol" width="100" height="24" viewBox="0 0 140 24" fill="none">
+        <text x="0" y="18" fill="#b8893a" opacity="0.7" font-size="14" font-family="serif">☽</text>
+        <line x1="20" y1="12" x2="55" y2="12" stroke="#b8893a" stroke-width="0.7" opacity="0.4"/>
+        <text x="60" y="18" fill="#b8893a" opacity="0.8" font-size="14" font-family="serif">✦</text>
+        <line x1="80" y1="12" x2="115" y2="12" stroke="#b8893a" stroke-width="0.7" opacity="0.4"/>
+        <text x="118" y="18" fill="#b8893a" opacity="0.7" font-size="14" font-family="serif">☀</text>
+      </svg>
+      <div class="orn-line"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ░░ BOOKING ░░ -->
-<section id="reserva">
+<section id="reserva" class="parchment-section">
+  <svg class="corner-ornament tl" viewBox="0 0 55 55" fill="none"><path d="M2 2 L28 2" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 2 L2 28" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 12 Q12 12 12 2" stroke="#b8893a" stroke-width="0.5" fill="none" opacity="0.5"/><circle cx="2" cy="2" r="2" fill="#b8893a" opacity="0.5"/></svg>
+  <svg class="corner-ornament tr" viewBox="0 0 55 55" fill="none"><path d="M2 2 L28 2" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 2 L2 28" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 12 Q12 12 12 2" stroke="#b8893a" stroke-width="0.5" fill="none" opacity="0.5"/><circle cx="2" cy="2" r="2" fill="#b8893a" opacity="0.5"/></svg>
+  <svg class="corner-ornament bl" viewBox="0 0 55 55" fill="none"><path d="M2 2 L28 2" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 2 L2 28" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 12 Q12 12 12 2" stroke="#b8893a" stroke-width="0.5" fill="none" opacity="0.5"/><circle cx="2" cy="2" r="2" fill="#b8893a" opacity="0.5"/></svg>
+  <svg class="corner-ornament br" viewBox="0 0 55 55" fill="none"><path d="M2 2 L28 2" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 2 L2 28" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/><path d="M2 12 Q12 12 12 2" stroke="#b8893a" stroke-width="0.5" fill="none" opacity="0.5"/><circle cx="2" cy="2" r="2" fill="#b8893a" opacity="0.5"/></svg>
+
   <div class="container">
     <div class="section-header reveal">
-      <p class="section-eyebrow">Agendamiento</p>
+      <p class="section-eyebrow">✦ &nbsp; Grimorio de Fechas &nbsp; ✦</p>
       <h2 class="section-title">Solicitud de Reserva</h2>
-      <p class="section-sub">Selecciona fecha y horario de tu preferencia. Te confirmaremos disponibilidad en menos de 24 horas.</p>
+      <div class="orn-divider" style="max-width:320px;margin:1rem auto;">
+        <div class="orn-line"></div>
+        <span class="orn-symbol" style="font-size:0.7rem;padding:0 0.8rem;">◈</span>
+        <div class="orn-line"></div>
+      </div>
+      <p class="section-sub">Inscribe tu nombre en el grimorio. La confirmación llegará en menos de 24 horas.</p>
     </div>
 
     <div class="booking-layout">
 
-      <!-- Calendar -->
+      <!-- Calendario -->
       <div class="reveal">
         <div class="calendar-wrap">
           <div class="calendar-header">
             <button class="cal-nav" id="prevMonth" onclick="changeMonth(-1)" aria-label="Mes anterior">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="15,18 9,12 15,6"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="15,18 9,12 15,6"/></svg>
             </button>
             <div class="cal-month">
               <span id="calMonthName">—</span>
               <small id="calYear">—</small>
             </div>
             <button class="cal-nav" id="nextMonth" onclick="changeMonth(1)" aria-label="Mes siguiente">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9,18 15,12 9,6"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9,18 15,12 9,6"/></svg>
             </button>
           </div>
           <div class="calendar-grid">
@@ -1032,28 +1370,27 @@
               <div class="cal-day-name">Sá</div>
             </div>
             <div class="cal-days" id="calDays"></div>
-
             <div class="time-slots" id="timeSlotsSection" style="display:none;">
-              <p class="time-slots-label">Horarios disponibles</p>
+              <p class="time-slots-label">☽ &nbsp; Horarios disponibles</p>
               <div class="slots-grid" id="slotsGrid"></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Form -->
+      <!-- Formulario -->
       <div class="form-wrap reveal">
 
         <div class="form-summary" id="bookingSummary">
-          <p class="form-summary-label">Selección Actual</p>
+          <p class="form-summary-label">Inscripción Actual</p>
           <p class="form-summary-value" id="summaryText">
-            <span class="form-summary-empty">Elija un servicio y fecha para continuar.</span>
+            <span class="form-summary-empty">Elige un rito y fecha para inscribir tu nombre.</span>
           </p>
         </div>
 
         <div class="field-group">
           <label class="field-label" for="inputNombre">Nombre Completo</label>
-          <input class="field-input" type="text" id="inputNombre" placeholder="Tu nombre y apellido" autocomplete="name" />
+          <input class="field-input" type="text" id="inputNombre" placeholder="Tu nombre completo..." autocomplete="name" />
           <p class="field-error">Por favor ingresa tu nombre completo.</p>
         </div>
 
@@ -1067,7 +1404,7 @@
           <label class="field-label" for="inputArea">Área de Enfoque</label>
           <div class="field-select-wrap">
             <select class="field-select" id="inputArea">
-              <option value="" disabled selected>Selecciona tu área principal</option>
+              <option value="" disabled selected>Selecciona tu área principal...</option>
               <option value="Claridad y propósito de vida">Claridad y propósito de vida</option>
               <option value="Relaciones y vínculos emocionales">Relaciones y vínculos emocionales</option>
               <option value="Prosperidad y abundancia">Prosperidad y abundancia</option>
@@ -1080,16 +1417,16 @@
         </div>
 
         <div class="field-group">
-          <label class="field-label" for="inputNota">Nota Adicional <span style="opacity:.5;font-size:.55rem;">(Opcional)</span></label>
-          <textarea class="field-textarea" id="inputNota" placeholder="¿Hay algo específico que desees abordar o que el facilitador deba considerar?"></textarea>
+          <label class="field-label" for="inputNota">Nota Adicional &nbsp;<span style="opacity:.4;font-size:.55rem;font-family:'Cinzel',serif;">(Opcional)</span></label>
+          <textarea class="field-textarea" id="inputNota" placeholder="¿Hay algo específico que el facilitador deba conocer antes de la sesión?"></textarea>
         </div>
 
         <div class="form-cta">
-          <button class="btn btn-primary" onclick="handleSubmit()" style="text-align:center;border:none;">
-            <span>Solicitar Reserva →</span>
+          <button class="btn btn-primary" onclick="handleSubmit()" style="text-align:center;border:none;width:100%;">
+            <span>Solicitar Reserva &nbsp;→</span>
           </button>
           <p class="form-cta-note">
-            Al enviar, recibirás confirmación por WhatsApp en menos de 24 hrs. · Política de discreción total.
+            Al inscribirte, recibirás confirmación por WhatsApp en menos de 24 hrs.<br>Política de discreción y confidencialidad absoluta.
           </p>
         </div>
 
@@ -1098,41 +1435,53 @@
   </div>
 </section>
 
+<!-- ░░ VOID TRANSITION ░░ -->
+<div style="position:relative;z-index:1;padding:1.5rem 0;background:var(--void);border-top:1px solid rgba(184,137,58,0.1);">
+  <div class="container">
+    <div class="orn-divider">
+      <div class="orn-line"></div>
+      <svg width="60" height="24" viewBox="0 0 60 24" fill="none">
+        <circle cx="30" cy="12" r="6" stroke="#b8893a" stroke-width="0.8" opacity="0.6"/>
+        <line x1="0" y1="12" x2="22" y2="12" stroke="#b8893a" stroke-width="0.6" opacity="0.4"/>
+        <line x1="38" y1="12" x2="60" y2="12" stroke="#b8893a" stroke-width="0.6" opacity="0.4"/>
+        <circle cx="30" cy="12" r="2.5" fill="#b8893a" opacity="0.5"/>
+      </svg>
+      <div class="orn-line"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ░░ PHILOSOPHY ░░ -->
 <section id="filosofia">
   <div class="container">
     <div class="section-header reveal">
-      <p class="section-eyebrow">Nuestra Esencia</p>
-      <h2 class="section-title" style="color:var(--cream);">Principios de la Práctica</h2>
-      <p class="section-sub" style="color:rgba(250,249,246,0.4);">Cada sesión es sostenida por pilares inamovibles de integridad, presencia y ética profesional.</p>
+      <p class="section-eyebrow">✦ &nbsp; Doctrina &nbsp; ✦</p>
+      <h2 class="section-title">Principios de la Práctica</h2>
+      <div class="orn-divider" style="max-width:320px;margin:1rem auto;">
+        <div class="orn-line" style="background:linear-gradient(to right, transparent, rgba(184,137,58,0.2), transparent);"></div>
+        <span class="orn-symbol" style="font-size:0.7rem;padding:0 0.8rem;">◈</span>
+        <div class="orn-line" style="background:linear-gradient(to right, transparent, rgba(184,137,58,0.2), transparent);"></div>
+      </div>
+      <p class="section-sub" style="color:rgba(237,225,188,0.38);">Cada sesión está sostenida por pilares inamovibles de integridad, presencia y ética profesional.</p>
     </div>
     <div class="pillars reveal">
       <div class="pillar">
-        <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        </svg>
+        <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         <p class="pillar-title">Discreción Absoluta</p>
         <p class="pillar-text">Total confidencialidad en cada intercambio y proceso. Tu privacidad es sagrada.</p>
       </div>
       <div class="pillar">
-        <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-          <circle cx="12" cy="8" r="4"/>
-          <path d="M12 14c-5 0-8 2-8 3v1h16v-1c0-1-3-3-8-3z"/>
-        </svg>
+        <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="8" r="4"/><path d="M12 14c-5 0-8 2-8 3v1h16v-1c0-1-3-3-8-3z"/></svg>
         <p class="pillar-title">Presencia Total</p>
         <p class="pillar-text">Cada sesión recibe atención undivided. Sin distracciones, sin protocolos genéricos.</p>
       </div>
       <div class="pillar">
-        <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-          <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z"/>
-        </svg>
+        <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z"/></svg>
         <p class="pillar-title">Excelencia Ritual</p>
-        <p class="pillar-text">Más de una década de formación y práctica continua en tradiciones de alto nivel.</p>
+        <p class="pillar-text">Más de una década de formación continua en tradiciones ancestrales de alto nivel.</p>
       </div>
       <div class="pillar">
-        <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-          <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-        </svg>
+        <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
         <p class="pillar-title">Ética Incondicional</p>
         <p class="pillar-text">Solo se trabaja desde el amor consciente, sin manipulación ni dependencia.</p>
       </div>
@@ -1142,31 +1491,38 @@
 
 <!-- ░░ FOOTER ░░ -->
 <footer>
-  <p class="footer-logo">Sanctum</p>
-  <div class="divider" style="flex:0;width:60px;margin:0;">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" stroke-width="1" style="opacity:.5;">
-      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
-    </svg>
-  </div>
-  <p class="footer-copy">© 2025 Sanctum Holístico — Todos los derechos reservados. Reservas con discreción absoluta.</p>
+  <p class="footer-logo">Sanctum Obscura</p>
+  <svg width="50" height="16" viewBox="0 0 50 16" fill="none">
+    <line x1="0" y1="8" x2="18" y2="8" stroke="#b8893a" stroke-width="0.6" opacity="0.3"/>
+    <circle cx="25" cy="8" r="4" stroke="#b8893a" stroke-width="0.6" opacity="0.4"/>
+    <circle cx="25" cy="8" r="1.5" fill="#b8893a" opacity="0.4"/>
+    <line x1="32" y1="8" x2="50" y2="8" stroke="#b8893a" stroke-width="0.6" opacity="0.3"/>
+  </svg>
+  <p class="footer-copy">© 2025 Sanctum Obscura — Todos los derechos reservados. Omnia sub sigillo discretionis.</p>
 </footer>
 
-<!-- ░░ MODAL DE CONFIRMACIÓN ░░ -->
+<!-- ░░ MODAL ░░ -->
 <div class="modal-overlay" id="confirmModal">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">×</button>
+    <!-- Corner ornaments on modal -->
+    <svg class="modal-corner tl" viewBox="0 0 40 40" fill="none"><path d="M1 1 L22 1 M1 1 L1 22" stroke="#b8893a" stroke-width="0.8" opacity="0.5"/><path d="M1 10 Q10 10 10 1" stroke="#b8893a" stroke-width="0.5" opacity="0.4"/><circle cx="1" cy="1" r="1.5" fill="#b8893a" opacity="0.5"/></svg>
+    <svg class="modal-corner tr" viewBox="0 0 40 40" fill="none"><path d="M1 1 L22 1 M1 1 L1 22" stroke="#b8893a" stroke-width="0.8" opacity="0.5"/><path d="M1 10 Q10 10 10 1" stroke="#b8893a" stroke-width="0.5" opacity="0.4"/><circle cx="1" cy="1" r="1.5" fill="#b8893a" opacity="0.5"/></svg>
+    <svg class="modal-corner bl" viewBox="0 0 40 40" fill="none"><path d="M1 1 L22 1 M1 1 L1 22" stroke="#b8893a" stroke-width="0.8" opacity="0.5"/><path d="M1 10 Q10 10 10 1" stroke="#b8893a" stroke-width="0.5" opacity="0.4"/><circle cx="1" cy="1" r="1.5" fill="#b8893a" opacity="0.5"/></svg>
+    <svg class="modal-corner br" viewBox="0 0 40 40" fill="none"><path d="M1 1 L22 1 M1 1 L1 22" stroke="#b8893a" stroke-width="0.8" opacity="0.5"/><path d="M1 10 Q10 10 10 1" stroke="#b8893a" stroke-width="0.5" opacity="0.4"/><circle cx="1" cy="1" r="1.5" fill="#b8893a" opacity="0.5"/></svg>
+
+    <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">✕</button>
     <div class="modal-icon">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
         <polyline points="22,4 12,14.01 9,11.01"/>
       </svg>
     </div>
-    <h3 class="modal-title">Confirmar Solicitud</h3>
-    <p class="modal-text">Por favor revisa los detalles de tu solicitud antes de continuar a WhatsApp.</p>
+    <h3 class="modal-title">Confirmar Inscripción</h3>
+    <p class="modal-text">Revisa los detalles sellados en el grimorio antes de continuar hacia WhatsApp.</p>
     <div class="modal-summary" id="modalSummaryContent"></div>
     <div class="modal-actions">
       <button class="btn btn-gold" onclick="goToWhatsApp()" style="border:none;text-align:center;width:100%;">
-        <span>Continuar a WhatsApp →</span>
+        <span>Continuar a WhatsApp &nbsp;→</span>
       </button>
       <button class="btn btn-outline" onclick="closeModal()" style="text-align:center;background:none;width:100%;cursor:pointer;">
         Modificar datos
@@ -1179,6 +1535,53 @@
 <div class="toast" id="toast"></div>
 
 <script>
+/* ═══════════════════════════════════════════════════════════
+   CONSTELLATION GENERATOR
+═══════════════════════════════════════════════════════════ */
+(function generateConstellation() {
+  const svg = document.getElementById('constellation');
+  const W = window.innerWidth, H = window.innerHeight;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('width', W); svg.setAttribute('height', H);
+
+  const stars = [];
+  for (let i = 0; i < 90; i++) {
+    stars.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.2 + 0.3,
+      o: Math.random() * 0.5 + 0.15
+    });
+  }
+
+  let lines = '';
+  for (let i = 0; i < stars.length; i++) {
+    for (let j = i + 1; j < stars.length; j++) {
+      const dx = stars[i].x - stars[j].x, dy = stars[i].y - stars[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 110) {
+        const op = (1 - dist / 110) * 0.07;
+        lines += `<line x1="${stars[i].x.toFixed(1)}" y1="${stars[i].y.toFixed(1)}" x2="${stars[j].x.toFixed(1)}" y2="${stars[j].y.toFixed(1)}" stroke="#b8893a" stroke-width="0.5" opacity="${op.toFixed(3)}"/>`;
+      }
+    }
+  }
+
+  const circles = stars.map(s =>
+    `<circle cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="${s.r.toFixed(2)}" fill="#b8893a" opacity="${s.o.toFixed(2)}"/>`
+  ).join('');
+
+  // A few larger glowing stars
+  const brightStars = Array.from({length: 8}, () => ({
+    x: Math.random() * W, y: Math.random() * H, r: 2.2
+  }));
+  const brights = brightStars.map(s =>
+    `<circle cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="${s.r}" fill="#e8cfa0" opacity="0.6"/>
+     <circle cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="${s.r * 4}" fill="#b8893a" opacity="0.06"/>`
+  ).join('');
+
+  svg.innerHTML = lines + circles + brights;
+})();
+
 /* ═══════════════════════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════════════════════ */
@@ -1298,19 +1701,33 @@ function changeMonth(dir) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   SERVICE SELECTION
+   SERVICE SELECTION (with ink blot effect)
 ═══════════════════════════════════════════════════════════ */
-function selectService(card) {
+function selectService(card, event) {
   document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
   card.classList.add('selected');
   state.selectedService = {
-    name: card.dataset.service,
-    price: card.dataset.price,
+    name:     card.dataset.service,
+    price:    card.dataset.price,
     duration: card.dataset.duration
   };
+
+  // Ink blot effect
+  const rect = card.getBoundingClientRect();
+  const x = (event.clientX - rect.left);
+  const y = (event.clientY - rect.top);
+  const blot = document.createElement('div');
+  blot.className = 'ink-blot';
+  blot.style.left = x + 'px';
+  blot.style.top  = y + 'px';
+  card.appendChild(blot);
+  setTimeout(() => blot.remove(), 900);
+
   updateSummary();
-  showToast('Servicio seleccionado. Elige fecha y horario.');
-  setTimeout(() => document.getElementById('reserva').scrollIntoView({ behavior: 'smooth', block: 'start' }), 400);
+  showToast('Rito seleccionado. Inscribe tu fecha en el grimorio.');
+  setTimeout(() => {
+    document.getElementById('reserva').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 500);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1327,20 +1744,20 @@ function updateSummary() {
   if (state.selectedTime) parts.push(`${state.selectedTime} hrs`);
 
   if (parts.length === 0) {
-    el.innerHTML = '<span class="form-summary-empty">Elija un servicio y fecha para continuar.</span>';
+    el.innerHTML = '<span class="form-summary-empty">Elige un rito y fecha para inscribir tu nombre.</span>';
   } else {
-    el.textContent = parts.join(' · ');
+    el.textContent = parts.join('  ·  ');
   }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   FORM SUBMISSION
+   FORM VALIDATION & SUBMISSION
 ═══════════════════════════════════════════════════════════ */
 function validate() {
   let ok = true;
   const nombre = document.getElementById('inputNombre');
-  const wa = document.getElementById('inputWA');
-  const area = document.getElementById('inputArea');
+  const wa     = document.getElementById('inputWA');
+  const area   = document.getElementById('inputArea');
 
   [nombre, wa, area].forEach(f => f.closest('.field-group').classList.remove('error'));
 
@@ -1353,15 +1770,9 @@ function validate() {
   if (!area.value) {
     area.closest('.field-group').classList.add('error'); ok = false;
   }
-  if (!state.selectedService) {
-    showToast('Por favor selecciona un servicio primero.'); ok = false;
-  }
-  if (!state.selectedDate) {
-    showToast('Por favor selecciona una fecha.'); ok = false;
-  }
-  if (!state.selectedTime) {
-    showToast('Por favor selecciona un horario.'); ok = false;
-  }
+  if (!state.selectedService) { showToast('Por favor selecciona un rito primero.'); ok = false; }
+  if (!state.selectedDate)    { showToast('Por favor inscribe una fecha.'); ok = false; }
+  if (!state.selectedTime)    { showToast('Por favor elige un horario.'); ok = false; }
   return ok;
 }
 
@@ -1369,18 +1780,18 @@ function handleSubmit() {
   if (!validate()) return;
 
   const nombre = document.getElementById('inputNombre').value.trim();
-  const wa = document.getElementById('inputWA').value.trim();
-  const area = document.getElementById('inputArea').value;
-  const nota = document.getElementById('inputNota').value.trim();
+  const wa     = document.getElementById('inputWA').value.trim();
+  const area   = document.getElementById('inputArea').value;
+  const nota   = document.getElementById('inputNota').value.trim();
   const [y, m, d] = state.selectedDate.split('-').map(Number);
   const fechaStr = `${d} de ${months[m-1]} de ${y}`;
 
   const mensaje = [
-    `Estimado/a equipo de *Sanctum Holístico*,`,
+    `Estimado/a equipo de *Sanctum Obscura*,`,
     ``,
     `Me dirijo a ustedes con el fin de solicitar formalmente una reserva para la siguiente sesión:`,
     ``,
-    `• *Servicio:* ${state.selectedService.name}`,
+    `• *Rito / Servicio:* ${state.selectedService.name}`,
     `• *Fecha solicitada:* ${fechaStr}`,
     `• *Horario preferido:* ${state.selectedTime} hrs`,
     `• *Área de Enfoque:* ${area}`,
@@ -1398,23 +1809,21 @@ function handleSubmit() {
 
   state.whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
 
-  // Build modal content
   const modal = document.getElementById('modalSummaryContent');
   const rows = [
-    ['Servicio', state.selectedService.name],
+    ['Rito',     state.selectedService.name],
     ['Duración', state.selectedService.duration],
-    ['Inversión', state.selectedService.price],
-    ['Fecha', fechaStr],
-    ['Horario', `${state.selectedTime} hrs`],
-    ['Nombre', nombre],
-    ['Área', area]
+    ['Inversión',state.selectedService.price],
+    ['Fecha',    fechaStr],
+    ['Horario',  `${state.selectedTime} hrs`],
+    ['Nombre',   nombre],
+    ['Área',     area]
   ];
   modal.innerHTML = rows.map(([k, v]) => `
     <div class="modal-summary-row">
       <span class="modal-summary-key">${k}</span>
       <span class="modal-summary-val">${v}</span>
-    </div>
-  `).join('');
+    </div>`).join('');
 
   openModal();
 }
@@ -1458,7 +1867,7 @@ const io = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
   });
-}, { threshold: 0.12 });
+}, { threshold: 0.1 });
 
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
@@ -1466,6 +1875,6 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
    INIT
 ═══════════════════════════════════════════════════════════ */
 renderCalendar();
-</script> 
+</script>
 </body>
 </html>
